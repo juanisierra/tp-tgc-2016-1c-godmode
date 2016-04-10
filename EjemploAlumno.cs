@@ -60,7 +60,7 @@ namespace AlumnoEjemplos.GODMODE
 
             TgcSceneLoader loader = new TgcSceneLoader(); //TgcsceneLoader para cargar el escenario
             tgcScene = loader.loadSceneFromFile(            //Carga el escenario
-                alumnoMediaFolder + "GODMODE\\Media\\mapa.xml",
+                alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
 
 
@@ -70,7 +70,7 @@ namespace AlumnoEjemplos.GODMODE
             //Por default la camara FPS viene desactivada
             GuiController.Instance.FpsCamera.Enable = true;
             //Configurar posicion y hacia donde se mira
-            GuiController.Instance.FpsCamera.setCamera(new Vector3(3261.925f, 65, 2519.217f), new Vector3(0, 0, 0));
+            GuiController.Instance.FpsCamera.setCamera(new Vector3(1f, 50, 1f), new Vector3(1.9996f, 50f, 0.9754f));
             GuiController.Instance.FpsCamera.Velocity = new Vector3(300f, 100f, 300f); ///Cambiamos Velocidad de la camara y anulamos y
         }
         /// <summary>
