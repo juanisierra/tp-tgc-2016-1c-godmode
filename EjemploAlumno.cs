@@ -9,8 +9,10 @@ using Microsoft.DirectX;
 using TgcViewer.Utils.Modifiers;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.Input;
 namespace AlumnoEjemplos.GODMODE
 {
+    #region Descripcion Ejemplo
     /// <summary>
     /// Ejemplo del alumno
     /// </summary>
@@ -41,15 +43,21 @@ namespace AlumnoEjemplos.GODMODE
         {
             return "Survival Horror";
         }
+        #endregion
 
+        
+        #region Variables Globales
         TgcScene tgcScene; // Crea la escena
-        /// <summary>
-        /// Método que se llama una sola vez,  al principio cuando se ejecuta el ejemplo.
-        /// Escribir aquí todo el código de inicialización: cargar modelos, texturas, modifiers, uservars, etc.
-        /// Borrar todo lo que no haga falta
-        /// </summary>
+        List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
+        Vector3 posCamaraAnterior;
+        Vector3 lookAtAnterior;
+        Camara camara;
+        TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
+        #endregion
+
         public override void init()
         {
+            GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
 
             //Device de DirectX para crear primitivas
@@ -58,44 +66,77 @@ namespace AlumnoEjemplos.GODMODE
             //Carpeta de archivos Media del alumno
             string alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
 
+            
             TgcSceneLoader loader = new TgcSceneLoader(); //TgcsceneLoader para cargar el escenario
             tgcScene = loader.loadSceneFromFile(            //Carga el escenario
                 alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
 
+            #region Configuracion de camara
+            //Camara
+            GuiController.Instance.FpsCamera.Enable = false;
+            GuiController.Instance.RotCamera.Enable = false;
+            camara = new Camara();
+            camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            camara.MovementSpeed = 100f;
+            camara.RotationSpeed = 2f;
+            camara.JumpSpeed = 30f;
+            #endregion
+            #region Control de Colisiones
 
-            ///////////////CONFIGURAR CAMARA PRIMERA PERSONA//////////////////
-            //Camara en primera persona, tipo videojuego FPS
-            //Solo puede haber una camara habilitada a la vez. Al habilitar la camara FPS se deshabilita la camara rotacional
-            //Por default la camara FPS viene desactivada
-            GuiController.Instance.FpsCamera.Enable = true;
-            //Configurar posicion y hacia donde se mira
-            GuiController.Instance.FpsCamera.setCamera(new Vector3(1f, 50, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-            GuiController.Instance.FpsCamera.Velocity = new Vector3(300f, 100f, 300f); ///Cambiamos Velocidad de la camara y anulamos y
+            objetosColisionables.Clear(); 
+                        foreach (TgcMesh mesh in tgcScene.Meshes) //Agrega una caja a cada mesh que haya en la escena
+                        {
+                            objetosColisionables.Add(mesh.BoundingBox);
+                        }
+
+                         esferaCamara = new TgcBoundingSphere(camara.getPosition(), 5f); //Crea la esfera de la camara en la posicion de la camara
+            #endregion
+
         }
-        /// <summary>
-        /// Método que se llama cada vez que hay que refrescar la pantalla.
-        /// Escribir aquí todo el código referido al renderizado.
-        /// Borrar todo lo que no haga falta
-        /// </summary>
+
+
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
-            
-            tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
-            //Device de DirectX para renderizar
+
+           //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
+            tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
+            #region Colisiones
+            esferaCamara.setCenter(camara.getPosition()); //Movemos la esfera a la posicion de la camara
+            //Detectar colisiones
+            bool collide = false;
+            foreach(TgcBoundingBox obstaculo in objetosColisionables)
+            {
+               if( TgcCollisionUtils.testSphereAABB(esferaCamara,obstaculo)) // Probamos cada box de la escena contra la esfera de la camara
+                {
+                    collide = true;
+                    break;
+                }
+            }
+            //Si hubo colision, restaurar la posicion anterior
+            if (collide)
+            {
+                camara.setCamera(posCamaraAnterior, lookAtAnterior);
+                camara.updateCamera();
 
+            }
+            else {
+                camara.updateCamera();
+                posCamaraAnterior = camara.getPosition();
+                lookAtAnterior = camara.getLookAt();
+            }
+            #endregion
 
-            
 
             ///////////////INPUT//////////////////
-            //conviene deshabilitar ambas camaras para que no haya interferencia
 
+            /*
             //Capturar Input teclado 
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F))
             {
-                //Tecla F apretada
+              
             }
 
             //Capturar Input Mouse
@@ -103,13 +144,9 @@ namespace AlumnoEjemplos.GODMODE
             {
                 //Boton izq apretado
             }
-
+   
+       */
         }
-
-        /// <summary>
-        /// Método que se llama cuando termina la ejecución del ejemplo.
-        /// Hacer dispose() de todos los objetos creados.
-        /// </summary>
         public override void close()
         {
             tgcScene.disposeAll();
