@@ -205,12 +205,12 @@ namespace AlumnoEjemplos.GODMODE
            
 
             //Solo rotar si se esta aprentando el boton izq del mouse
-            //if (lockCam || GuiController.Instance.D3dInput.buttonDown(TgcD3dInput.MouseButtons.BUTTON_RIGHT))
-            // {
+            if (lockCam || GuiController.Instance.D3dInput.buttonDown(TgcD3dInput.MouseButtons.BUTTON_RIGHT))
+             {
             rotate(-GuiController.Instance.D3dInput.XposRelative * rotationSpeed,
                        -GuiController.Instance.D3dInput.YposRelative * rotationSpeed);
 
-           // }
+            }
 
 
             if (lockCam)
