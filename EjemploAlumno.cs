@@ -53,12 +53,14 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lookAtAnterior;
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
-        TgcBox linterna;
+        TgcBox meshLuz; //Linterna
+        Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
+        float temblorLuz;
         #endregion
 
         public override void init()
         {
-           // GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
+            //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
 
             //Device de DirectX para crear primitivas
@@ -67,10 +69,10 @@ namespace AlumnoEjemplos.GODMODE
             //Carpeta de archivos Media del alumno
             string alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
             #region Linterna
-            linterna = TgcBox.fromSize(new Vector3(10, 10, 10), Color.FromArgb(0,0,0,0));
-            linterna.AlphaBlendEnable = true;
+            
+           meshLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
 
-
+           
 
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
@@ -79,7 +81,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addFloat("specularEx", 0, 20, 9f);
             GuiController.Instance.Modifiers.addFloat("spotAngle", 0, 180, 39f);
             GuiController.Instance.Modifiers.addFloat("spotExponent", 0, 20, 7f);
-            
+            GuiController.Instance.Modifiers.addVertex3f("posLint", new Vector3(-100f, -100f, 0f), new Vector3(100f,100f, 150f),new Vector3(25f, -70f, 52.5f));
+           
             //Modifiers de material
             GuiController.Instance.Modifiers.addColor("mEmissive", Color.Black);
             GuiController.Instance.Modifiers.addColor("mAmbient", Color.White);
@@ -93,6 +96,7 @@ namespace AlumnoEjemplos.GODMODE
                 alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
             #endregion
+
             #region Configuracion de camara
             //Camara
             GuiController.Instance.FpsCamera.Enable = false;
@@ -103,6 +107,7 @@ namespace AlumnoEjemplos.GODMODE
             camara.RotationSpeed = 2f;
             camara.JumpSpeed = 30f;
             #endregion
+
             #region Control de Colisiones
 
             objetosColisionables.Clear(); 
@@ -111,9 +116,11 @@ namespace AlumnoEjemplos.GODMODE
                             objetosColisionables.Add(mesh.BoundingBox);
                         }
 
-                         esferaCamara = new TgcBoundingSphere(camara.getPosition(), 5f); //Crea la esfera de la camara en la posicion de la camara
+            esferaCamara = new TgcBoundingSphere(camara.getPosition(), 15f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
 
+           meshLuz.Position = camara.getPosition() + new Vector3(25f, -70f, 52.5f);
+           meshLuz.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(-14f), Geometry.DegreeToRadian(0f));
         }
 
 
@@ -124,13 +131,13 @@ namespace AlumnoEjemplos.GODMODE
            //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
 
-            
-           
-        
 
-        //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
-        #region Colisiones
-        esferaCamara.setCenter(camara.getPosition()); //Movemos la esfera a la posicion de la camara
+
+
+            //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
+            #region Colisiones
+             esferaCamara.setCenter(camara.getPosition()); //TODO MOVER LA ESFERA PARA INCLUIR LA LINTERNA
+          
             //Detectar colisiones
             bool collide = false;
             foreach(TgcBoundingBox obstaculo in objetosColisionables)
@@ -154,68 +161,67 @@ namespace AlumnoEjemplos.GODMODE
                 lookAtAnterior = camara.getLookAt();
             }
             #endregion
+
             #region Luz Linterna
             bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
-            Effect currentShader;
             if (lightEnable)
             {
-                //Con luz: Cambiar el shader actual por el shader default que trae el framework para iluminacion dinamica con PointLight
-                currentShader = GuiController.Instance.Shaders.TgcMeshSpotLightShader;
-
+                foreach (TgcMesh mesh in tgcScene.Meshes)
+                {
+                    miLuz.prenderLuz(mesh);
+                }
             }
             else
             {
-                //Sin luz: Restaurar shader default
-                currentShader = GuiController.Instance.Shaders.TgcMeshShader;
+                foreach (TgcMesh mesh in tgcScene.Meshes)
+                {
+                    miLuz.apagarLuz(mesh);
+                }
             }
 
-            foreach (TgcMesh mesh in tgcScene.Meshes)
-            {
-                mesh.Effect = currentShader;
-                //El Technique depende del tipo RenderType del mesh
-                mesh.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(mesh.RenderType);
-            }
+
 
             //Actualzar posición de la luz
-            //Vector3 lightPos = (Vector3)GuiController.Instance.Modifiers["lightPos"];
+           
             Vector3 lightPos = camara.getPosition();
-            linterna.Position = lightPos;
+           
 
             //Normalizar direccion de la luz
-            // Vector3 lightDir = (Vector3)GuiController.Instance.Modifiers["lightDir"];
-            Vector3 lightDir = camara.target - camara.eye;
-            lightDir.Normalize();
+        
+           Vector3 lightDir = camara.target - camara.eye;
+            lightDir.Normalize();            
 
             //Renderizar meshes
             foreach (TgcMesh mesh in tgcScene.Meshes)
             {
-                if (lightEnable)
+               if(lightEnable)
                 {
-                    //Cargar variables shader de la luz
-                    mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.White));
-                    mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                    mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(camara.getPosition()));
-                    mesh.Effect.SetValue("spotLightDir", TgcParserUtils.vector3ToFloat3Array(lightDir));
-                    mesh.Effect.SetValue("lightIntensity", (float)GuiController.Instance.Modifiers["lightIntensity"]);
-                    mesh.Effect.SetValue("lightAttenuation", (float)GuiController.Instance.Modifiers["lightAttenuation"]);
-                    mesh.Effect.SetValue("spotLightAngleCos", FastMath.ToRad((float)GuiController.Instance.Modifiers["spotAngle"]));
-                    mesh.Effect.SetValue("spotLightExponent", (float)GuiController.Instance.Modifiers["spotExponent"]);
-                    //Variables de los materiales
-                     mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mEmissive"]));
-                    mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mAmbient"]));
-                    mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mDiffuse"]));
-                    mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mSpecular"]));
-                    mesh.Effect.SetValue("materialSpecularExp", (float)GuiController.Instance.Modifiers["specularEx"]);
+                    miLuz.renderizarLuz(lightPos, lightDir, mesh, (float) GuiController.Instance.Modifiers["lightIntensity"]);
+                }
                 }
 
-                //Renderizar modelo
-                mesh.render();
-            }
 
 
             //Renderizar mesh de luz
-            linterna.render();
+  
+            temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+            var random = FastMath.Cos(6 * temblorLuz);
+            var random2 = FastMath.Cos(12 * temblorLuz);
+            meshLuz.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(-5f + random), Geometry.DegreeToRadian(0f));
+
+
+
+            var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
+            GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
+           meshLuz.render();
+            GuiController.Instance.D3dDevice.Transform.View = matrizView;
+
             #endregion
+
+            esferaCamara.setRenderColor(Color.Aqua);
+            esferaCamara.render();
+
+            #region Ejemplo de input
             ///////////////INPUT//////////////////
 
             /*
@@ -232,6 +238,7 @@ namespace AlumnoEjemplos.GODMODE
             }
    
        */
+            #endregion
         }
         public override void close()
         {
