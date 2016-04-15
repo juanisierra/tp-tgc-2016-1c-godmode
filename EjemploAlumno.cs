@@ -53,9 +53,11 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lookAtAnterior;
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
-        TgcBox meshLuz; //Linterna
+        TgcScene linterna, vela, farol;
+        TgcMesh meshLinterna,meshVela,meshFarol;
         Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
         float temblorLuz;
+        int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         #endregion
 
         public override void init()
@@ -65,37 +67,34 @@ namespace AlumnoEjemplos.GODMODE
 
             //Device de DirectX para crear primitivas
             Device d3dDevice = GuiController.Instance.D3dDevice;
-
+            ObjetoIluminacion = 0;
             //Carpeta de archivos Media del alumno
             string alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
-            #region Linterna
-            
-           meshLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
-
-           
-
-            //Modifiers de la luz
-            GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
-            GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 150, 35);
-            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0.1f, 2, 0.3f);
-            GuiController.Instance.Modifiers.addFloat("specularEx", 0, 20, 9f);
-            GuiController.Instance.Modifiers.addFloat("spotAngle", 0, 180, 39f);
-            GuiController.Instance.Modifiers.addFloat("spotExponent", 0, 20, 7f);
-            GuiController.Instance.Modifiers.addVertex3f("posLint", new Vector3(-100f, -100f, 0f), new Vector3(100f,100f, 150f),new Vector3(25f, -70f, 52.5f));
-           
-            //Modifiers de material
-            GuiController.Instance.Modifiers.addColor("mEmissive", Color.Black);
-            GuiController.Instance.Modifiers.addColor("mAmbient", Color.White);
-            GuiController.Instance.Modifiers.addColor("mDiffuse", Color.White);
-            GuiController.Instance.Modifiers.addColor("mSpecular", Color.White);
-            #endregion
-
-            #region Carga de la Escena
+              #region Carga de la Escena
             TgcSceneLoader loader = new TgcSceneLoader(); //TgcsceneLoader para cargar el escenario
             tgcScene = loader.loadSceneFromFile(            //Carga el escenario
                 alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
             #endregion
+            #region Linterna
+            
+
+            linterna = loader.loadSceneFromFile( alumnoMediaFolder + "GODMODE\\Media\\linterna-TgcScene.xml",
+                alumnoMediaFolder + "GODMODE\\Media\\");
+            meshLinterna = linterna.Meshes[0];
+           vela = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\vela con fuego-TgcScene.xml",
+               alumnoMediaFolder + "GODMODE\\Media\\");
+            meshVela = vela.Meshes[0];
+            farol = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\farol-TgcScene.xml",
+             alumnoMediaFolder + "GODMODE\\Media\\");
+            meshFarol = farol.Meshes[0];
+
+            //Modifiers de la luz
+            GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
+       
+            #endregion
+
+
 
             #region Configuracion de camara
             //Camara
@@ -119,8 +118,15 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 15f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
 
-           meshLuz.Position = camara.getPosition() + new Vector3(25f, -70f, 52.5f);
-           meshLuz.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(-14f), Geometry.DegreeToRadian(0f));
+             meshLinterna.Position = camara.getPosition() + new Vector3(10f,-70f,52.5f);
+            meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
+            meshLinterna.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+            meshVela.Position = camara.getPosition() + new Vector3(10f, -80f, 52.5f);
+            meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
+            meshVela.Scale = new Vector3(0.08f, 0.08f, 0.08f);
+            meshFarol.Position = camara.getPosition() + new Vector3(15f, -80f, 52.5f);
+            meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
+            meshFarol.Scale = new Vector3(0.2f,0.2f,0.2f);
         }
 
 
@@ -168,7 +174,7 @@ namespace AlumnoEjemplos.GODMODE
             {
                 foreach (TgcMesh mesh in tgcScene.Meshes)
                 {
-                    miLuz.prenderLuz(mesh);
+                    miLuz.prenderLuz(ObjetoIluminacion,mesh);
                 }
             }
             else
@@ -195,25 +201,36 @@ namespace AlumnoEjemplos.GODMODE
             foreach (TgcMesh mesh in tgcScene.Meshes)
             {
                if(lightEnable)
-                {
-                    miLuz.renderizarLuz(lightPos, lightDir, mesh, (float) GuiController.Instance.Modifiers["lightIntensity"]);
+                {   if(ObjetoIluminacion==0) { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz); } else
+                    {
+                        miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f, temblorLuz);
+                    }
+                     
                 }
-                }
+            }
 
-
+            
 
             //Renderizar mesh de luz
   
             temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
             var random = FastMath.Cos(6 * temblorLuz);
             var random2 = FastMath.Cos(12 * temblorLuz);
-            meshLuz.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(-5f + random), Geometry.DegreeToRadian(0f));
-
-
+            meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
 
             var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
             GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
-           meshLuz.render();
+            if(ObjetoIluminacion==0)
+            {
+                meshLinterna.render();
+            } else if (ObjetoIluminacion==1){
+                meshFarol.render();
+            } else if (ObjetoIluminacion==2) {
+                meshVela.render();
+            }
+
             GuiController.Instance.D3dDevice.Transform.View = matrizView;
 
             #endregion
@@ -224,20 +241,28 @@ namespace AlumnoEjemplos.GODMODE
             #region Ejemplo de input
             ///////////////INPUT//////////////////
 
-            /*
+            
             //Capturar Input teclado 
-            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F))
+            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.D1))
             {
-              
+                ObjetoIluminacion = 0;
+            }
+            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.D2))
+            {
+                ObjetoIluminacion = 1;
+            }
+            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.D3))
+            {
+                ObjetoIluminacion = 2;
             }
 
-            //Capturar Input Mouse
+           /* //Capturar Input Mouse
             if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
             {
                 //Boton izq apretado
-            }
+            }*/
    
-       */
+       
             #endregion
         }
         public override void close()
