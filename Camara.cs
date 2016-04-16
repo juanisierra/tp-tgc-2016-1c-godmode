@@ -7,6 +7,7 @@ using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using TgcViewer.Utils.Input;
 using TgcViewer;
+using TgcViewer.Utils.TgcGeometry;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -21,7 +22,7 @@ namespace AlumnoEjemplos.GODMODE
     /// 
     public class Camara : TgcCamera
     {
-
+        SphereCollisionManager collisionManager;
         /*
          * Esta Camara es un prototipo. Esta pensada para no utilizar senos y cosenos en las rotaciones.
          * Se utiliza una camara que se desplaza sobre las caras de un cubo sin techo, ni piso. 
@@ -45,7 +46,13 @@ namespace AlumnoEjemplos.GODMODE
         private double longitud;
         public static Vector3 movimiento;
         public static bool moving;
-
+        public TgcBoundingSphere characterSphere;
+        public List<TgcBoundingBox> objetosColisionables;
+        public void init()
+        {
+            collisionManager = new SphereCollisionManager();
+            collisionManager.GravityEnabled = true;
+        }
 
 
         public Camara()
@@ -149,6 +156,12 @@ namespace AlumnoEjemplos.GODMODE
         {
             float elapsedTime = GuiController.Instance.ElapsedTime;
 
+
+            collisionManager.GravityEnabled = (bool)GuiController.Instance.Modifiers["HabilitarGravedad"];
+            collisionManager.GravityForce = (Vector3)GuiController.Instance.Modifiers["Gravedad"];
+            collisionManager.SlideFactor = (float)GuiController.Instance.Modifiers["SlideFactor"];
+
+            movimiento = new Vector3(0, 0, 0);
             //Forward
             if (GuiController.Instance.D3dInput.keyDown(Key.W))
             {
@@ -169,15 +182,15 @@ namespace AlumnoEjemplos.GODMODE
             if (GuiController.Instance.D3dInput.keyDown(Key.D))
             {
                 Vector3 v = moveSide(MovementSpeed * elapsedTime);
-                movimiento = v;
-                moving = true;
+               movimiento = v;
+               moving = true;
             }
 
             //Strafe left
             if (GuiController.Instance.D3dInput.keyDown(Key.A))
             {
                 Vector3 v = moveSide(-MovementSpeed * elapsedTime);
-                movimiento = v;
+               movimiento = v;
                 moving = true;
             }
 
@@ -222,6 +235,7 @@ namespace AlumnoEjemplos.GODMODE
 
 
         }
+       
 
         public void updateViewMatrix(Microsoft.DirectX.Direct3D.Device d3dDevice)
         {
@@ -275,15 +289,18 @@ namespace AlumnoEjemplos.GODMODE
         public Vector3 moveForward(float movimiento)
         {
             Vector3 v = ForwardDirection * movimiento;
-            move(v);
-            return v;
+            Vector3 realMovement = collisionManager.moveCharacter(characterSphere,v, objetosColisionables);
+
+            move(realMovement);
+            return realMovement;
         }
 
         public Vector3 moveSide(float movimiento)
         {
             Vector3 v = SideDirection * movimiento;
-            move(v);
-            return v;
+            Vector3 realMovement = collisionManager.moveCharacter(characterSphere, v, objetosColisionables);
+            move(realMovement);
+            return realMovement;
         }
 
         public Vector3 moveUp(float movimiento)
