@@ -53,18 +53,21 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lookAtAnterior;
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
-        TgcScene linterna, vela, farol;
-        TgcMesh meshLinterna,meshVela,meshFarol;
+        TgcScene linterna, vela, farol,pila1;
+        TgcMesh meshLinterna,meshVela,meshFarol,meshPila1;
         Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
         float temblorLuz;
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
+        float tiempo;
+        float tiempoIluminacion;
+        Recarga miRecarga;
         #endregion
 
         public override void init()
-        {
+        {   
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
-            
+            GuiController.Instance.UserVars.addVar("a", 0);
             //Device de DirectX para crear primitivas
             Device d3dDevice = GuiController.Instance.D3dDevice;
             ObjetoIluminacion = 0;
@@ -76,29 +79,27 @@ namespace AlumnoEjemplos.GODMODE
                 alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
             #endregion
-            #region Linterna
-            
 
-            linterna = loader.loadSceneFromFile( alumnoMediaFolder + "GODMODE\\Media\\linterna-TgcScene.xml",
-                alumnoMediaFolder + "GODMODE\\Media\\");
-            meshLinterna = linterna.Meshes[0];
-           vela = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\vela con fuego-TgcScene.xml",
-               alumnoMediaFolder + "GODMODE\\Media\\");
-            meshVela = vela.Meshes[0];
-            farol = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\farol-TgcScene.xml",
-             alumnoMediaFolder + "GODMODE\\Media\\");
-            meshFarol = farol.Meshes[0];
+            #region Recargas
+            miRecarga = new Recarga();
+            tiempo = 0;
+            tiempoIluminacion = 60 * 3;
+            meshPila1 = miRecarga.nuevaRecarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
+            #endregion
+
 
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
 
-            #endregion
+
 
             //Modifiers para desplazamiento del personaje
   
             GuiController.Instance.Modifiers.addBoolean("HabilitarGravedad", "Habilitar Gravedad", false);
             GuiController.Instance.Modifiers.addVertex3f("Gravedad", new Vector3(-50, -50, -50), new Vector3(50, 50, 50), new Vector3(0, -10, 0));
             GuiController.Instance.Modifiers.addFloat("SlideFactor", 1f, 200f,1.5f);
+            GuiController.Instance.UserVars.addVar("poder", 0);
+            GuiController.Instance.UserVars.addVar("posicion", 0);
 
             #region Configuracion de camara
             //Camara
@@ -123,7 +124,19 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
 
-             meshLinterna.Position = camara.getPosition() + new Vector3(10f,-70f,52.5f);
+            #region Meshes Objetos Iluminacion
+
+            linterna = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\linterna-TgcScene.xml",
+             alumnoMediaFolder + "GODMODE\\Media\\");
+            meshLinterna = linterna.Meshes[0];
+            vela = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\vela con fuego-TgcScene.xml",
+                alumnoMediaFolder + "GODMODE\\Media\\");
+            meshVela = vela.Meshes[0];
+            farol = loader.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\farol-TgcScene.xml",
+             alumnoMediaFolder + "GODMODE\\Media\\");
+            meshFarol = farol.Meshes[0];
+
+            meshLinterna.Position = camara.getPosition() + new Vector3(10f,-70f,52.5f);
             meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
             meshLinterna.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             meshVela.Position = camara.getPosition() + new Vector3(10f, -80f, 52.5f);
@@ -132,25 +145,30 @@ namespace AlumnoEjemplos.GODMODE
             meshFarol.Position = camara.getPosition() + new Vector3(15f, -80f, 52.5f);
             meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
             meshFarol.Scale = new Vector3(0.2f,0.2f,0.2f);
+            #endregion
         }
 
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
+            
 
-           //Device de DirectX para renderizar
+            //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
 
 
 
-
+            GuiController.Instance.UserVars.setValue("a",tiempo);
             //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
-           
+
+            #region Camara y Colisiones
             camara.objetosColisionables = objetosColisionables;
             camara.characterSphere = esferaCamara;
             camara.updateCamera();
-           
+            #endregion
+
+
             #region Luz Linterna
             bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
             if (lightEnable)
@@ -168,8 +186,6 @@ namespace AlumnoEjemplos.GODMODE
                 }
             }
 
-
-
             //Actualzar posición de la luz
            
             Vector3 lightPos = camara.getPosition();
@@ -184,16 +200,15 @@ namespace AlumnoEjemplos.GODMODE
             foreach (TgcMesh mesh in tgcScene.Meshes)
             {
                if(lightEnable)
-                {   if(ObjetoIluminacion==0) { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz); } else
+                {   if(ObjetoIluminacion==0) { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/180), temblorLuz); } else
                     {
-                        miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f, temblorLuz);
+                        miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f* (tiempoIluminacion / 180), temblorLuz);
                     }
                      
                 }
             }
 
             
-
             //Renderizar mesh de luz
   
             temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
@@ -221,10 +236,26 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara.setRenderColor(Color.Aqua);
             esferaCamara.render();
 
+            
+            #region Calculos Tiempo Iluminacion
+            tiempoIluminacion -= elapsedTime;
+            if (tiempoIluminacion <= 0) tiempoIluminacion = 1;
+            tiempo += elapsedTime;
+
+            miRecarga.flotar(meshPila1, random);
+            meshPila1.render();
+            if(Math.Abs(Vector3.Length(camara.eye - meshPila1.Position)) <30f)
+            {
+                tiempoIluminacion = 180f;
+            }
+            GuiController.Instance.UserVars.setValue("posicion",esferaCamara.Center);
+            GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
+            #endregion
+
             #region Ejemplo de input
             ///////////////INPUT//////////////////
 
-            
+
             //Capturar Input teclado 
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.D1))
             {
