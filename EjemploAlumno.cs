@@ -120,7 +120,7 @@ namespace AlumnoEjemplos.GODMODE
                             objetosColisionables.Add(mesh.BoundingBox);
                         }
 
-            esferaCamara = new TgcBoundingSphere(camara.getPosition(), 17f); //Crea la esfera de la camara en la posicion de la camara
+            esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
 
              meshLinterna.Position = camara.getPosition() + new Vector3(10f,-70f,52.5f);
@@ -150,35 +150,7 @@ namespace AlumnoEjemplos.GODMODE
             camara.objetosColisionables = objetosColisionables;
             camara.characterSphere = esferaCamara;
             camara.updateCamera();
-            //esferaCamara.setCenter(camara.getPosition());
-            //TODO MOVER LA ESFERA PARA INCLUIR LA LINTERNA
-                                                          /*  #region Colisiones
-                                                            esferaCamara.setCenter(camara.getPosition()); //TODO MOVER LA ESFERA PARA INCLUIR LA LINTERNA
-
-                                                           //Detectar colisiones
-                                                          bool collide = false;
-                                                           foreach(TgcBoundingBox obstaculo in objetosColisionables)
-                                                           {
-                                                              if( TgcCollisionUtils.testSphereAABB(esferaCamara,obstaculo)) // Probamos cada box de la escena contra la esfera de la camara
-                                                               {
-                                                                   collide = true;
-                                                                   break;
-                                                               }
-                                                           }
-                                                           //Si hubo colision, restaurar la posicion anterior
-                                                           if (collide)
-                                                           {
-                                                               camara.setCamera(posCamaraAnterior, lookAtAnterior);
-                                                               camara.updateCamera();
-
-                                                           }
-                                                           else {
-                                                               camara.updateCamera();
-                                                               posCamaraAnterior = camara.getPosition();
-                                                               lookAtAnterior = camara.getLookAt();
-                                                           }
-                                                           #endregion
-                                                           */
+           
             #region Luz Linterna
             bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
             if (lightEnable)

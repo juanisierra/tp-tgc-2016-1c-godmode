@@ -315,6 +315,7 @@ namespace AlumnoEjemplos.GODMODE
             //rotate(movimiento, 0.0f, 0.0f);
 
             rotate(movimiento, 0);
+           
         }
 
         public void rotateXZ(float movimiento)
