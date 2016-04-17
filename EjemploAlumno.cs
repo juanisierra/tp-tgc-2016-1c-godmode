@@ -49,11 +49,11 @@ namespace AlumnoEjemplos.GODMODE
         #region Variables Globales
         TgcScene tgcScene; // Crea la escena
         List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
-        Vector3 posCamaraAnterior;
-        Vector3 lookAtAnterior;
+        List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
-        TgcScene linterna, vela, farol,pila1;
+        TgcScene linterna, vela, farol;
+        List<TgcMesh> meshesExtra = new List<TgcMesh>(); //Otros meshes para iluminar
         TgcMesh meshLinterna,meshVela,meshFarol,meshPila1;
         Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
         float temblorLuz;
@@ -61,10 +61,13 @@ namespace AlumnoEjemplos.GODMODE
         float tiempo;
         float tiempoIluminacion;
         Recarga miRecarga;
+        Puerta miPuerta;
+        public static Boolean esperandoPuerta; //si esta en true no se mueve
         #endregion
 
         public override void init()
-        {   
+        {
+            esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
             GuiController.Instance.UserVars.addVar("a", 0);
@@ -146,41 +149,69 @@ namespace AlumnoEjemplos.GODMODE
             meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
             meshFarol.Scale = new Vector3(0.2f,0.2f,0.2f);
             #endregion
+            #region Prueba puerta
+           miPuerta = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
+
+            #endregion
+            meshesExtra.Add(miPuerta.mesh);
+
         }
 
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
-            
+            #region Manejo de Una puerta
+            if (Math.Abs(Vector3.Length(camara.eye - (miPuerta.mesh.Position + (new Vector3(0f,50f,0f)) ))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
+            {
+                miPuerta.girando = true;
+                esperandoPuerta = true;
+            }
+            miPuerta.actualizarPuerta(elapsedTime);
+            miPuerta.mesh.updateBoundingBox();
+         
+                miPuerta.mesh.BoundingBox.transform(miPuerta.mesh.Transform); //rota el bounding box
+           
+            miPuerta.mesh.BoundingBox.setRenderColor(Color.White);
+            miPuerta.mesh.BoundingBox.render();
+            objetosColisionablesCambiantes.Add(miPuerta.mesh.BoundingBox);
+            #endregion
 
             //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
 
-
-
+            
             GuiController.Instance.UserVars.setValue("a",tiempo);
             //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
-
+            
             #region Camara y Colisiones
-            camara.objetosColisionables = objetosColisionables;
+            List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
+            todosObjetosColisionables.AddRange(objetosColisionables);
+            todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
+            camara.objetosColisionables = todosObjetosColisionables;
             camara.characterSphere = esferaCamara;
-            camara.updateCamera();
+            if (esperandoPuerta == false)
+            {
+                camara.updateCamera();
+            }
             #endregion
 
 
             #region Luz Linterna
+            List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
+            todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
+            todosLosMeshesIluminables.AddRange(meshesExtra);
             bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
             if (lightEnable)
             {
-                foreach (TgcMesh mesh in tgcScene.Meshes)
+                foreach (TgcMesh mesh in todosLosMeshesIluminables)
                 {
                     miLuz.prenderLuz(ObjetoIluminacion,mesh);
                 }
             }
             else
             {
-                foreach (TgcMesh mesh in tgcScene.Meshes)
+                foreach (TgcMesh mesh in todosLosMeshesIluminables)
                 {
                     miLuz.apagarLuz(mesh);
                 }
@@ -197,7 +228,7 @@ namespace AlumnoEjemplos.GODMODE
             lightDir.Normalize();            
 
             //Renderizar meshes
-            foreach (TgcMesh mesh in tgcScene.Meshes)
+            foreach (TgcMesh mesh in todosLosMeshesIluminables)
             {
                if(lightEnable)
                 {   if(ObjetoIluminacion==0) { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/180), temblorLuz); } else
