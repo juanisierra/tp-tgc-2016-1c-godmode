@@ -8,7 +8,7 @@ using System.Drawing;
 using Microsoft.DirectX;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
-
+using TgcViewer.Utils._2D;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -63,10 +63,12 @@ namespace AlumnoEjemplos.GODMODE
         Recarga miRecarga;
         Puerta miPuerta;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
+        TgcSprite bateria; 
         #endregion
 
         public override void init()
         {
+           
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
@@ -149,8 +151,18 @@ namespace AlumnoEjemplos.GODMODE
             meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f), Geometry.DegreeToRadian(90f), Geometry.DegreeToRadian(-5f));
             meshFarol.Scale = new Vector3(0.2f,0.2f,0.2f);
             #endregion
+
+            #region Sprite Bateria
+            bateria = new TgcSprite();
+            bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
+            Size screenSize = GuiController.Instance.Panel3d.Size;
+            Size textureSize = bateria.Texture.Size;
+            bateria.Scaling = new Vector2(0.6f, 0.6f);
+            bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
+            #endregion
+
             #region Prueba puerta
-           miPuerta = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
+            miPuerta = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
 
             #endregion
             meshesExtra.Add(miPuerta.mesh);
@@ -267,10 +279,11 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara.setRenderColor(Color.Aqua);
             esferaCamara.render();
 
-            
+        
+  
             #region Calculos Tiempo Iluminacion
             tiempoIluminacion -= elapsedTime;
-            if (tiempoIluminacion <= 0) tiempoIluminacion = 1;
+            if (tiempoIluminacion <= 15) tiempoIluminacion = 15;
             tiempo += elapsedTime;
 
             miRecarga.flotar(meshPila1, random);
@@ -281,6 +294,30 @@ namespace AlumnoEjemplos.GODMODE
             }
             GuiController.Instance.UserVars.setValue("posicion",esferaCamara.Center);
             GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
+            #endregion
+
+            #region Sprite de Bateria
+            if (tiempoIluminacion <= 30)
+            {
+                bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
+            } else if (tiempoIluminacion >30 && tiempoIluminacion<100)
+            {
+                bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria1.png");
+            } else if (tiempoIluminacion >=100 && tiempoIluminacion<=150)
+            {
+                bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria2.png");
+            } else
+            {
+                bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
+            }
+            //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
+            GuiController.Instance.Drawer2D.beginDrawSprite();
+
+            //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+           bateria.render();
+
+            //Finalizar el dibujado de Sprites
+            GuiController.Instance.Drawer2D.endDrawSprite();
             #endregion
 
             #region Ejemplo de input
