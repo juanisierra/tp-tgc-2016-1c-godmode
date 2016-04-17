@@ -1,5 +1,5 @@
 <tgcScene>
-  <name>puerta</name>
+  <name>Puerta</name>
   <texturesExport enabled="True" dir="Textures" />
   <lightmapExport enabled="False" dir="LightMaps" />
   <sceneBoundingBox min="[-17.407,0.073,-1.1802]" max="[-0.093,46.2312,1.1803]" />
