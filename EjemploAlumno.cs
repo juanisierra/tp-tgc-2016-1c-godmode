@@ -55,7 +55,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
         List<TgcMesh> meshesExtra = new List<TgcMesh>(); //Otros meshes para iluminar
-        TgcMesh meshLinterna,meshVela,meshFarol,meshPila1;
+        TgcMesh meshLinterna,meshVela,meshFarol;
         Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
         float temblorLuz;
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
@@ -100,10 +100,9 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Recargas
-            miRecarga = new Recarga();
+            miRecarga = new Recarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
             tiempo = 0;
             tiempoIluminacion = 60 * 3;
-            meshPila1 = miRecarga.nuevaRecarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -374,12 +373,16 @@ namespace AlumnoEjemplos.GODMODE
             if (tiempoIluminacion <= 15) tiempoIluminacion = 15;
             tiempo += elapsedTime;
 
-            miRecarga.flotar(meshPila1, random);
-            meshPila1.render();
-            if(Math.Abs(Vector3.Length(camara.eye - meshPila1.Position)) <30f)
-            {
-                tiempoIluminacion = 180f;
+            
+           
+            if(Math.Abs(Vector3.Length(camara.eye - miRecarga.mesh.Position)) <30f)
+            {   if (!miRecarga.usada)
+                {
+                    tiempoIluminacion = 180f;
+                }
+                miRecarga.usada = true;
             }
+            miRecarga.flotar(random,elapsedTime);
             GuiController.Instance.UserVars.setValue("posicion",esferaCamara.Center);
             GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
             #endregion
