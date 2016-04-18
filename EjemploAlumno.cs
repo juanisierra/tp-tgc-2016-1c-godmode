@@ -9,6 +9,7 @@ using Microsoft.DirectX;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils._2D;
+using TgcViewer.Utils.TgcSkeletalAnimation;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -63,8 +64,19 @@ namespace AlumnoEjemplos.GODMODE
         Recarga miRecarga;
         Puerta miPuerta;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
-        TgcSprite bateria; 
+        TgcSprite bateria;
+        TgcSkeletalMesh meshEnemigo;
+        Enemigo enemigo = new Enemigo();
+        Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
+        bool corriendo = false;
+        TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
+        bool perdido = false;
+        Vector3 direccionRayo = new Vector3();
+        Vector3 lastKnownPos = new Vector3();
+        string animacionSeleccionada;
         #endregion
+
+        const int VELOCIDAD_ENEMIGO = 100;
 
         public override void init()
         {
@@ -78,7 +90,7 @@ namespace AlumnoEjemplos.GODMODE
             ObjetoIluminacion = 0;
             //Carpeta de archivos Media del alumno
             string alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
-              #region Carga de la Escena
+            #region Carga de la Escena
             TgcSceneLoader loader = new TgcSceneLoader(); //TgcsceneLoader para cargar el escenario
             tgcScene = loader.loadSceneFromFile(            //Carga el escenario
                 alumnoMediaFolder + "GODMODE\\Media\\mapaCentrado-TgcScene.xml",
@@ -92,10 +104,26 @@ namespace AlumnoEjemplos.GODMODE
             meshPila1 = miRecarga.nuevaRecarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
             #endregion
 
+            #region Carga de Mesh para Enemigo
+            string pathMesh = alumnoMediaFolder + "GODMODE\\Media\\BasicHuman\\BasicHuman-TgcSkeletalMesh.xml";
+            string mediaPath = alumnoMediaFolder + "GODMODE\\Media\\BasicHuman\\";
+            TgcSkeletalLoader enemigos = new TgcSkeletalLoader();
+            string[] animaciones = { "Walk" };
+            animacionSeleccionada = animaciones[0];
+            for (int i = 0; i < animaciones.Length; i++)
+            {
+                animaciones[i] = mediaPath + "Animations\\" + animaciones[i] + "-TgcSkeletalAnim.xml";
+            }
+            meshEnemigo = enemigos.loadMeshAndAnimationsFromFile(pathMesh, mediaPath, animaciones);
+            meshEnemigo.playAnimation(animacionSeleccionada, true);
+            meshEnemigo.Position = new Vector3(500, 0, 0);
+            meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
+            meshEnemigo.rotateY(FastMath.PI / 2);
+            enemigo.setMesh(meshEnemigo);
+            #endregion
 
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
-
 
 
             //Modifiers para desplazamiento del personaje
@@ -167,6 +195,12 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
             meshesExtra.Add(miPuerta.mesh);
 
+            #region Inicializacion del rayo
+            direccionRayo = camara.getPosition() - enemigo.getPosicion();
+            rayo.Origin = enemigo.getPosicion();
+            rayo.Direction = direccionRayo;
+            #endregion
+
         }
 
 
@@ -196,16 +230,39 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.setValue("a",tiempo);
             //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
             
-            #region Camara y Colisiones
+            #region Camara, Colisiones y Deteccion
             List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
             todosObjetosColisionables.AddRange(objetosColisionables);
             todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
             camara.objetosColisionables = todosObjetosColisionables;
             camara.characterSphere = esferaCamara;
-            if (esperandoPuerta == false)
+            if (!esperandoPuerta)
             {
                 camara.updateCamera();
             }
+
+            #region Deteccion del jugador
+
+            int cantColisiones = 0;
+            direccionRayo = camara.getPosition() - enemigo.getPosicion();
+            rayo.Origin = enemigo.getPosicion();
+            rayo.Direction = direccionRayo;
+            foreach (TgcBoundingBox obstaculo in objetosColisionables)
+            {
+                if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
+                    cantColisiones++;
+            }
+
+            if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+            {
+                lastKnownPos = esferaCamara.Position;
+                perdido = true;
+            }
+
+            if (cantColisiones <= 2) perdido = false; //Si se ve al jugador, indicar que se lo encontro
+
+            #endregion
+
             #endregion
 
 
@@ -279,8 +336,16 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara.setRenderColor(Color.Aqua);
             esferaCamara.render();
 
-        
-  
+            #region Mover Enemigo
+            if (!perdido)
+                enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
+            else
+                enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+
+            enemigo.actualizarAnim();
+            enemigo.render();
+            #endregion
+
             #region Calculos Tiempo Iluminacion
             tiempoIluminacion -= elapsedTime;
             if (tiempoIluminacion <= 15) tiempoIluminacion = 15;
@@ -347,6 +412,7 @@ namespace AlumnoEjemplos.GODMODE
        
             #endregion
         }
+
         public override void close()
         {
             tgcScene.disposeAll();
