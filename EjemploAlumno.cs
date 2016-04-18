@@ -74,13 +74,15 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 direccionRayo = new Vector3();
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
+        float tiempoBuscando;
+        Boolean enemigoActivo = true;
         #endregion
 
-        const int VELOCIDAD_ENEMIGO = 100;
+        const int VELOCIDAD_ENEMIGO = 70;
 
         public override void init()
         {
-           
+            tiempoBuscando = 15;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
@@ -200,6 +202,7 @@ namespace AlumnoEjemplos.GODMODE
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
             #endregion
+            GuiController.Instance.UserVars.addVar("perdido", perdido);
 
         }
 
@@ -207,6 +210,7 @@ namespace AlumnoEjemplos.GODMODE
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
+            GuiController.Instance.UserVars.setValue("perdido", perdido);
             #region Manejo de Una puerta
             if (Math.Abs(Vector3.Length(camara.eye - (miPuerta.mesh.Position + (new Vector3(0f,50f,0f)) ))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
             {
@@ -242,25 +246,26 @@ namespace AlumnoEjemplos.GODMODE
             }
 
             #region Deteccion del jugador
-
-            int cantColisiones = 0;
-            direccionRayo = camara.getPosition() - enemigo.getPosicion();
-            rayo.Origin = enemigo.getPosicion();
-            rayo.Direction = direccionRayo;
-            foreach (TgcBoundingBox obstaculo in objetosColisionables)
+            if (enemigoActivo)
             {
-                if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
-                    cantColisiones++;
+                int cantColisiones = 0;
+                direccionRayo = camara.getPosition() - enemigo.getPosicion();
+                rayo.Origin = enemigo.getPosicion();
+                rayo.Direction = direccionRayo;
+                foreach (TgcBoundingBox obstaculo in objetosColisionables)
+                {
+                    if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
+                        cantColisiones++;
+                }
+
+                if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                {
+                    lastKnownPos = esferaCamara.Position;
+                    perdido = true;
+                }
+
+                if (cantColisiones <= 2) perdido = false; //Si se ve al jugador, indicar que se lo encontro
             }
-
-            if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
-            {
-                lastKnownPos = esferaCamara.Position;
-                perdido = true;
-            }
-
-            if (cantColisiones <= 2) perdido = false; //Si se ve al jugador, indicar que se lo encontro
-
             #endregion
 
             #endregion
@@ -337,13 +342,31 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara.render();
 
             #region Mover Enemigo
-            if (!perdido)
-                enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
-            else
-                enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+            if (enemigoActivo == true)
+            {
+                if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f)
+                {
 
-            enemigo.actualizarAnim();
-            enemigo.render();
+
+                    if (!perdido)
+                        enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
+                    else
+                    {
+                        enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+                        tiempoBuscando -= elapsedTime;
+                    }
+                    enemigo.actualizarAnim();
+                    enemigo.render();
+                }
+                if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
+                {
+                    tiempoBuscando = 15;
+                    meshEnemigo.Position = new Vector3(500, 0, 0);
+                    enemigoActivo = false;
+                }
+
+            }
+
             #endregion
 
             #region Calculos Tiempo Iluminacion

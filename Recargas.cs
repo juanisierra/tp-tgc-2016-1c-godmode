@@ -13,6 +13,7 @@ namespace AlumnoEjemplos.GODMODE
     
     class Recarga 
     { private static TgcSceneLoader cargador;
+        public float tiempoAparicion = 0;
         public Recarga()
         {
             cargador = new TgcSceneLoader();
