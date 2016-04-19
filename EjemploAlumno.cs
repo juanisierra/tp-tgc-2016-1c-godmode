@@ -10,6 +10,7 @@ using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils._2D;
 using TgcViewer.Utils.TgcSkeletalAnimation;
+using TgcViewer.Utils.Sound;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -62,7 +63,7 @@ namespace AlumnoEjemplos.GODMODE
         float tiempo;
         float tiempoIluminacion;
         Recarga miRecarga;
-        Puerta puerta1,puerta2,puerta3,puerta4;
+        Puerta puerta1, puerta2, puerta3, puerta4;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria;
         TgcSkeletalMesh meshEnemigo;
@@ -75,8 +76,13 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = false;
+        Boolean enemigoActivo = true;
+        List<Tgc3dSound> sonidos;
+        Tgc3dSound sonidoEnemigo;
+        TgcStaticSound sonidoPilas;
         #endregion
+
+        string alumnoMediaFolder;
 
         const int VELOCIDAD_ENEMIGO = 70;
 
@@ -91,7 +97,8 @@ namespace AlumnoEjemplos.GODMODE
             Device d3dDevice = GuiController.Instance.D3dDevice;
             ObjetoIluminacion = 0;
             //Carpeta de archivos Media del alumno
-            string alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
+            alumnoMediaFolder = GuiController.Instance.AlumnoEjemplosDir;
+
             #region Carga de la Escena
             TgcSceneLoader loader = new TgcSceneLoader(); //TgcsceneLoader para cargar el escenario
             tgcScene = loader.loadSceneFromFile(            //Carga el escenario
@@ -123,6 +130,7 @@ namespace AlumnoEjemplos.GODMODE
             enemigo.setMesh(meshEnemigo);
             #endregion
 
+            #region Modifiers
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
 
@@ -134,7 +142,9 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addFloat("SlideFactor", 1f, 200f,1.5f);
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
+            GuiController.Instance.UserVars.addVar("perdido", perdido);
             GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(150f, 0f, -100f), new Vector3(300f, 1.95f, 100f), new Vector3(250f, 1f, 57f));
+            #endregion
 
             #region Configuracion de camara
             //Camara
@@ -157,6 +167,19 @@ namespace AlumnoEjemplos.GODMODE
                         }
 
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
+            #endregion
+
+            /* ACLARACION: para usar ListenerTracking es necesario pasar un mesh por parametro. Como la esfera del jugador no tiene, el envio
+             * del sonido se hace de esfera a enemigo; es decir, el ListenerTracking se hace sobre el enemigo.*/
+            #region Sonido
+            sonidos = new List<Tgc3dSound>();
+            sonidoEnemigo = new Tgc3dSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav", esferaCamara.Position);
+            sonidoEnemigo.MinDistance = 10f;
+            sonidos.Add(sonidoEnemigo);
+            GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
+            sonidoEnemigo.play(true);
+            sonidoPilas = new TgcStaticSound();
+            sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\Mi abuelo dice....wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -191,10 +214,10 @@ namespace AlumnoEjemplos.GODMODE
             bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
 
-            #region Prueba puerta
+            #region Puertas
             puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
-            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f,-3.15f, 0f));
+            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
             //puerta4 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
@@ -206,7 +229,6 @@ namespace AlumnoEjemplos.GODMODE
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
             #endregion
-            GuiController.Instance.UserVars.addVar("perdido", perdido);
 
         }
 
@@ -215,12 +237,13 @@ namespace AlumnoEjemplos.GODMODE
         public override void render(float elapsedTime)
         {
             GuiController.Instance.UserVars.setValue("perdido", perdido);
-            #region Manejo de Una puerta
+
+            #region Manejo de Puertas
             manejarPuerta(puerta1);
             manejarPuerta(puerta2); //Hacer foreach
             manejarPuerta(puerta3);
-           // puerta3.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
-           // manejarPuerta(puerta4);
+                       // puerta3.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
+                       // manejarPuerta(puerta4);
            
             #endregion
 
@@ -254,19 +277,23 @@ namespace AlumnoEjemplos.GODMODE
                     if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
                         cantColisiones++;
                 }
-
                 if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
                 {
                     lastKnownPos = esferaCamara.Position;
                     perdido = true;
                 }
 
-                if (cantColisiones <= 2) perdido = false; //Si se ve al jugador, indicar que se lo encontro
+                if (cantColisiones <= 2)
+                {
+                    perdido = false; //Si se ve al jugador, indicar que se lo encontro
+                    enemigoActivo = true;
+                }
             }
             #endregion
 
             #endregion
 
+            sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
 
             #region Luz Linterna
             List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
@@ -295,7 +322,7 @@ namespace AlumnoEjemplos.GODMODE
 
             //Normalizar direccion de la luz
         
-           Vector3 lightDir = camara.target - camara.eye;
+            Vector3 lightDir = camara.target - camara.eye;
             lightDir.Normalize();            
 
             //Renderizar meshes
@@ -339,12 +366,10 @@ namespace AlumnoEjemplos.GODMODE
             esferaCamara.render();
 
             #region Mover Enemigo
-            if (enemigoActivo == true)
+            if (enemigoActivo)
             {
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f)
                 {
-
-
                     if (!perdido)
                         enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
                     else
@@ -352,18 +377,17 @@ namespace AlumnoEjemplos.GODMODE
                         enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
                         tiempoBuscando -= elapsedTime;
                     }
-                    enemigo.actualizarAnim();
-                    enemigo.render();
                 }
+                enemigo.actualizarAnim();
+                enemigo.render();
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
                 {
                     tiempoBuscando = 15;
                     meshEnemigo.Position = new Vector3(500, 0, 0);
                     enemigoActivo = false;
+                    sonidoEnemigo.stop();
                 }
-
             }
-
             #endregion
 
             #region Calculos Tiempo Iluminacion
@@ -377,6 +401,7 @@ namespace AlumnoEjemplos.GODMODE
             {   if (!miRecarga.usada)
                 {
                     tiempoIluminacion = 180f;
+                    sonidoPilas.play();
                 }
                 miRecarga.usada = true;
             }
@@ -403,7 +428,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Drawer2D.beginDrawSprite();
 
             //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
-           bateria.render();
+            bateria.render();
 
             //Finalizar el dibujado de Sprites
             GuiController.Instance.Drawer2D.endDrawSprite();
@@ -440,24 +465,26 @@ namespace AlumnoEjemplos.GODMODE
         public override void close()
         {
             tgcScene.disposeAll();
+            sonidoEnemigo.dispose();
+            sonidoPilas.dispose();
+            enemigo.getMesh().dispose();
         }
-
         private void manejarPuerta(Puerta puerta)
-        {
-            if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
-            {
-                puerta.girando = true;
-                esperandoPuerta = true;
-            }
-            puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
-            puerta.mesh.updateBoundingBox();
-
-            puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
-
-            puerta.mesh.BoundingBox.setRenderColor(Color.White);
-            puerta.mesh.BoundingBox.render();
-            objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
-        }
+         {
+             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
+             {
+                 puerta.girando = true;
+                 esperandoPuerta = true;
+             }
+             puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
+             puerta.mesh.updateBoundingBox();
+ 
+             puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
+ 
+             puerta.mesh.BoundingBox.setRenderColor(Color.White);
+             puerta.mesh.BoundingBox.render();
+             objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
+         }
 
     }
 }
