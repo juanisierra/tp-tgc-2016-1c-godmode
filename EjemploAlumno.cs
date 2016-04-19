@@ -62,7 +62,7 @@ namespace AlumnoEjemplos.GODMODE
         float tiempo;
         float tiempoIluminacion;
         Recarga miRecarga;
-        Puerta miPuerta;
+        Puerta puerta1,puerta2,puerta3,puerta4;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria;
         TgcSkeletalMesh meshEnemigo;
@@ -75,7 +75,7 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = true;
+        Boolean enemigoActivo = false;
         #endregion
 
         const int VELOCIDAD_ENEMIGO = 70;
@@ -134,6 +134,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addFloat("SlideFactor", 1f, 200f,1.5f);
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
+            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(150f, 0f, -100f), new Vector3(300f, 1.95f, 100f), new Vector3(250f, 1f, 57f));
 
             #region Configuracion de camara
             //Camara
@@ -191,10 +192,14 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Prueba puerta
-            miPuerta = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
-
+            puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
+            puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
+            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f,-3.15f, 0f));
+            //puerta4 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
+            meshesExtra.Add(puerta1.mesh);
+            meshesExtra.Add(puerta2.mesh);
+            meshesExtra.Add(puerta3.mesh);
             #endregion
-            meshesExtra.Add(miPuerta.mesh);
 
             #region Inicializacion del rayo
             direccionRayo = camara.getPosition() - enemigo.getPosicion();
@@ -211,19 +216,12 @@ namespace AlumnoEjemplos.GODMODE
         {
             GuiController.Instance.UserVars.setValue("perdido", perdido);
             #region Manejo de Una puerta
-            if (Math.Abs(Vector3.Length(camara.eye - (miPuerta.mesh.Position + (new Vector3(0f,50f,0f)) ))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
-            {
-                miPuerta.girando = true;
-                esperandoPuerta = true;
-            }
-            miPuerta.actualizarPuerta(elapsedTime);
-            miPuerta.mesh.updateBoundingBox();
-         
-                miPuerta.mesh.BoundingBox.transform(miPuerta.mesh.Transform); //rota el bounding box
+            manejarPuerta(puerta1);
+            manejarPuerta(puerta2); //Hacer foreach
+            manejarPuerta(puerta3);
+           // puerta3.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
+           // manejarPuerta(puerta4);
            
-            miPuerta.mesh.BoundingBox.setRenderColor(Color.White);
-            miPuerta.mesh.BoundingBox.render();
-            objetosColisionablesCambiantes.Add(miPuerta.mesh.BoundingBox);
             #endregion
 
             //Device de DirectX para renderizar
@@ -442,6 +440,23 @@ namespace AlumnoEjemplos.GODMODE
         public override void close()
         {
             tgcScene.disposeAll();
+        }
+
+        private void manejarPuerta(Puerta puerta)
+        {
+            if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
+            {
+                puerta.girando = true;
+                esperandoPuerta = true;
+            }
+            puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
+            puerta.mesh.updateBoundingBox();
+
+            puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
+
+            puerta.mesh.BoundingBox.setRenderColor(Color.White);
+            puerta.mesh.BoundingBox.render();
+            objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
         }
 
     }
