@@ -416,7 +416,7 @@ namespace AlumnoEjemplos.GODMODE
                     if (!pila.usada)
                     {
                         tiempoIluminacion = 180f;
-                        sonidoPilas.play();
+                        //sonidoPilas.play();
                     }
                     pila.usada = true;
                     tiempoIluminacion = 180f;
