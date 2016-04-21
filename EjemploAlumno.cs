@@ -224,7 +224,7 @@ namespace AlumnoEjemplos.GODMODE
             puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
-            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
+            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
            // puerta5 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
