@@ -62,7 +62,7 @@ namespace AlumnoEjemplos.GODMODE
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         float tiempo;
         float tiempoIluminacion;
-        Puerta puerta1, puerta2, puerta3, puerta4;
+        Puerta puerta1, puerta2, puerta3, puerta4, puerta5;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria;
         TgcSkeletalMesh meshEnemigo;
@@ -148,7 +148,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(150f, 0f, -100f), new Vector3(300f, 1.95f, 100f), new Vector3(250f, 1f, 57f));
+            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-130f, 0f, 728f), new Vector3(80f, 1.95f, 1030f), new Vector3(-21f, 1f, 948.8f));
+            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-55.7f, -52.15f, -51f), new Vector3(55f, 52.15f, 51f), new Vector3(4f, 2.15f, 1f));
             #endregion
 
             #region Configuracion de camara
@@ -177,14 +178,14 @@ namespace AlumnoEjemplos.GODMODE
             /* ACLARACION: para usar ListenerTracking es necesario pasar un mesh por parametro. Como la esfera del jugador no tiene, el envio
              * del sonido se hace de esfera a enemigo; es decir, el ListenerTracking se hace sobre el enemigo.*/
             #region Sonido
-            sonidos = new List<Tgc3dSound>();
-            sonidoEnemigo = new Tgc3dSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav", esferaCamara.Position);
-            sonidoEnemigo.MinDistance = 10f;
-            sonidos.Add(sonidoEnemigo);
-            GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
-            sonidoEnemigo.play(true);
-            sonidoPilas = new TgcStaticSound();
-            sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\Mi abuelo dice....wav");
+           // sonidos = new List<Tgc3dSound>();
+            //sonidoEnemigo = new Tgc3dSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav", esferaCamara.Position);
+            //sonidoEnemigo.MinDistance = 10f;
+            //sonidos.Add(sonidoEnemigo);
+            //GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
+            //sonidoEnemigo.play(true);
+            //sonidoPilas = new TgcStaticSound();
+            //sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\Mi abuelo dice....wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -223,10 +224,14 @@ namespace AlumnoEjemplos.GODMODE
             puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
-            //puerta4 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
+            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
+           // puerta5 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
+            meshesExtra.Add(puerta4.mesh);
+          //  meshesExtra.Add(puerta5.mesh);
+
             #endregion
 
             #region Inicializacion del rayo
@@ -247,9 +252,11 @@ namespace AlumnoEjemplos.GODMODE
             manejarPuerta(puerta1);
             manejarPuerta(puerta2); //Hacer foreach
             manejarPuerta(puerta3);
-                       // puerta3.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
-                       // manejarPuerta(puerta4);
-           
+            manejarPuerta(puerta4);
+          //  manejarPuerta(puerta5);
+          //  puerta4.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
+           // puerta4.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
+
             #endregion
 
             //Device de DirectX para renderizar
@@ -298,7 +305,7 @@ namespace AlumnoEjemplos.GODMODE
 
             #endregion
 
-            sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
+          //  sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
 
             #region Luz Linterna
             List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
@@ -390,7 +397,7 @@ namespace AlumnoEjemplos.GODMODE
                     tiempoBuscando = 15;
                     meshEnemigo.Position = new Vector3(500, 0, 0);
                     enemigoActivo = false;
-                    sonidoEnemigo.stop();
+                  //  sonidoEnemigo.stop();
                 }
             }
             #endregion
@@ -412,6 +419,8 @@ namespace AlumnoEjemplos.GODMODE
                         sonidoPilas.play();
                     }
                     pila.usada = true;
+                    tiempoIluminacion = 180f;
+                   // sonidoPilas.play();
                 }
                 pila.flotar(random, elapsedTime);
                 GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
@@ -443,7 +452,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Drawer2D.endDrawSprite();
             #endregion
 
-            #region Ejemplo de input
+            #region Ejemplo de input teclado
             ///////////////INPUT//////////////////
 
 
@@ -474,8 +483,8 @@ namespace AlumnoEjemplos.GODMODE
         public override void close()
         {
             tgcScene.disposeAll();
-            sonidoEnemigo.dispose();
-            sonidoPilas.dispose();
+           // sonidoEnemigo.dispose();
+            //sonidoPilas.dispose();
             enemigo.getMesh().dispose();
             for (int i = 0; i < 4; i++)
                 recargas[i].dispose();
