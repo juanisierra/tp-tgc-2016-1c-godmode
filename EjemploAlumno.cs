@@ -57,12 +57,11 @@ namespace AlumnoEjemplos.GODMODE
         TgcScene linterna, vela, farol;
         List<TgcMesh> meshesExtra = new List<TgcMesh>(); //Otros meshes para iluminar
         TgcMesh meshLinterna,meshVela,meshFarol;
-        Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de a linterna
+        Luz miLuz= new Luz(); //Instancia de clase luz para la iluminacion de la linterna
         float temblorLuz;
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         float tiempo;
         float tiempoIluminacion;
-        Recarga miRecarga;
         Puerta puerta1, puerta2, puerta3, puerta4;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria;
@@ -80,6 +79,8 @@ namespace AlumnoEjemplos.GODMODE
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
+        Recarga[] recargas;
+        Objetivo[] objetivos = new Objetivo[3];
         #endregion
 
         string alumnoMediaFolder;
@@ -106,10 +107,14 @@ namespace AlumnoEjemplos.GODMODE
                 alumnoMediaFolder + "GODMODE\\Media\\");
             #endregion
 
-            #region Recargas
-            miRecarga = new Recarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
+            #region Inicializacion de Recargas
+            recargas = new Recarga[4];
+            recargas[0] = new Recarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
+            recargas[1] = new Recarga(alumnoMediaFolder, new Vector3(-1469.953f, 20f, 966.6811f));
+            recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(-670.0464f, 20f, -249.502f));
+            recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(1867.597f, 20f, -117.9719f));
             tiempo = 0;
-            tiempoIluminacion = 60 * 3;
+            tiempoIluminacion = 180; // 60 segundos * 3 = 3 minutos
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -391,23 +396,27 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Calculos Tiempo Iluminacion
+
             tiempoIluminacion -= elapsedTime;
-            if (tiempoIluminacion <= 15) tiempoIluminacion = 15;
+            if (tiempoIluminacion <= 15)
+                tiempoIluminacion = 15;
             tiempo += elapsedTime;
 
-            
-           
-            if(Math.Abs(Vector3.Length(camara.eye - miRecarga.mesh.Position)) <30f)
-            {   if (!miRecarga.usada)
+            foreach (Recarga pila in recargas)
+            {
+                if (Math.Abs(Vector3.Length(camara.eye - pila.mesh.Position)) < 30f)
                 {
-                    tiempoIluminacion = 180f;
-                    sonidoPilas.play();
+                    if (!pila.usada)
+                    {
+                        tiempoIluminacion = 180f;
+                        sonidoPilas.play();
+                    }
+                    pila.usada = true;
                 }
-                miRecarga.usada = true;
+                pila.flotar(random, elapsedTime);
+                GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
+                GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
             }
-            miRecarga.flotar(random,elapsedTime);
-            GuiController.Instance.UserVars.setValue("posicion",esferaCamara.Center);
-            GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
             #endregion
 
             #region Sprite de Bateria
@@ -468,7 +477,10 @@ namespace AlumnoEjemplos.GODMODE
             sonidoEnemigo.dispose();
             sonidoPilas.dispose();
             enemigo.getMesh().dispose();
+            for (int i = 0; i < 4; i++)
+                recargas[i].dispose();
         }
+
         private void manejarPuerta(Puerta puerta)
          {
              if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura

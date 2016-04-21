@@ -12,7 +12,8 @@ namespace AlumnoEjemplos.GODMODE
 {
     
     class Recarga 
-    { private static TgcSceneLoader cargador;
+    {
+        private static TgcSceneLoader cargador;
         public float tiempoAparicion = 15;
         public TgcMesh mesh;
         public Boolean usada = false;
@@ -22,7 +23,7 @@ namespace AlumnoEjemplos.GODMODE
             TgcScene nueva = cargador.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\battery-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
             mesh = nueva.Meshes[0];
-            mesh.Scale = new Vector3(0.07f, 0.07f, 0.07f);
+            mesh.Scale = new Vector3(0.03f, 0.03f, 0.03f);
             mesh.Position = posicion;
         }/*
         public TgcMesh nuevaRecarga(String alumnoMediaFolder, Vector3 posicion)
@@ -49,6 +50,11 @@ namespace AlumnoEjemplos.GODMODE
                     tiempoAparicion = 15;
                 }
             }
+        }
+
+        public void dispose()
+        {
+            mesh.dispose();
         }
     }
 }
