@@ -76,7 +76,7 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = true;
+        Boolean enemigoActivo = false;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
@@ -111,10 +111,10 @@ namespace AlumnoEjemplos.GODMODE
 
             #region Inicializacion de Recargas
             recargas = new Recarga[4];
-            recargas[0] = new Recarga(alumnoMediaFolder, new Vector3(15f, 20f, 15f));
-            recargas[1] = new Recarga(alumnoMediaFolder, new Vector3(-1469.953f, 20f, 966.6811f));
-            recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(-670.0464f, 20f, -249.502f));
-            recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(1867.597f, 20f, -117.9719f));
+            recargas[0] = new Recarga(alumnoMediaFolder, new Vector3(-1508f, 20f, 107f));
+            recargas[1] = new Recarga(alumnoMediaFolder, new Vector3(-1430.953f, 20f, 966.6811f));
+            recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1274.0464f, 20f, -458f));
+            recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
             tiempoIluminacion = 180; // 60 segundos * 3 = 3 minutos
             #endregion
@@ -227,11 +227,11 @@ namespace AlumnoEjemplos.GODMODE
             #region Puertas
             puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
-            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
-            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
+            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(253f, 1f, 60f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.17f, 0f));
+            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f)); // Adealantar al otro pasillo
             puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1360f, 1f, 436f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f));
             puerta6 = new Puerta(alumnoMediaFolder, new Vector3(1198f, 1f, -752f), new Vector3(4.55f, 2.15f, 1f), new Vector3(0f, 3.1f, 0f));
-            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -249f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f));
+            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -249f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f)); //ULTIMOA PUERTA
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
@@ -247,11 +247,14 @@ namespace AlumnoEjemplos.GODMODE
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
             #endregion
-            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1100f, 10f,-850f), new Vector3(0.1f, 0.1f, 0.1f));
+
+            #region Objetos a buscar
+            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1100f, 30f,-850f), new Vector3(0.1f, 0.1f, 0.1f));
             espada = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\espada-TgcScene.xml", new Vector3(829f, 0f, 821f), new Vector3(0.1f, 0.1f, 0.1f));
             locket = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\locket-TgcScene.xml", new Vector3(-1447f, 30f,1023f), new Vector3(0.02f,0.02f,0.02f));
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
+            #endregion
         }
 
 
@@ -270,7 +273,10 @@ namespace AlumnoEjemplos.GODMODE
             manejarPuerta(puerta4);
             manejarPuerta(puerta5);
             manejarPuerta(puerta6);
-            manejarPuerta(puerta7);
+            if (copa.encontrado && locket.encontrado && espada.encontrado)
+            {
+                manejarPuerta(puerta7);
+            }
             puerta6.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"];
             puerta6.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
             
@@ -481,7 +487,7 @@ namespace AlumnoEjemplos.GODMODE
             {
                 copa.encontrado = true;
             }
-            if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 40f)
+            if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
             {
                 espada.encontrado = true;
             }
@@ -490,7 +496,7 @@ namespace AlumnoEjemplos.GODMODE
                 locket.encontrado = true;
             }
             espada.flotar(random, elapsedTime,10f);
-            copa.flotar(random, elapsedTime,10f);
+            copa.flotar(random, elapsedTime,30f);
             locket.flotar(random, elapsedTime, 30f);
             #endregion
             #region Ejemplo de input teclado

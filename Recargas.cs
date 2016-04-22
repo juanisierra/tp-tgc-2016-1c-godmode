@@ -23,18 +23,10 @@ namespace AlumnoEjemplos.GODMODE
             TgcScene nueva = cargador.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\battery-TgcScene.xml",
                 alumnoMediaFolder + "GODMODE\\Media\\");
             mesh = nueva.Meshes[0];
-            mesh.Scale = new Vector3(0.03f, 0.03f, 0.03f);
-            mesh.Position = posicion;
-        }/*
-        public TgcMesh nuevaRecarga(String alumnoMediaFolder, Vector3 posicion)
-        {
-            TgcScene nueva = cargador.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\battery-TgcScene.xml",
-                alumnoMediaFolder + "GODMODE\\Media\\");
-            TgcMesh mesh = nueva.Meshes[0];
             mesh.Scale = new Vector3(0.07f, 0.07f, 0.07f);
             mesh.Position = posicion;
-            return mesh;
-        }*/
+        }
+
         public void flotar(float random,float elapsedTime)
         {
             mesh.Position = new Vector3(mesh.Position.X, 30f + random, mesh.Position.Z);

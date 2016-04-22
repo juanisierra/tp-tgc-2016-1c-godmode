@@ -39,9 +39,9 @@ namespace AlumnoEjemplos.GODMODE
         public void actualizarPuerta(float elapsedTime) // poner girando en true para que gire
         {   if (girando == true && abierta == true)
             {   
-                angulo += (elapsedTime / 3) * 1.6f;
-                if (angulo >= 1.6) {
-                    angulo = 1.6f;
+                angulo += (elapsedTime / 3) * 1.605f;
+                if (angulo >= 1.605) {
+                    angulo = 1.605f;
                     girando = false;
                     EjemploAlumno.esperandoPuerta = false;
                     abierta = false;
@@ -50,10 +50,10 @@ namespace AlumnoEjemplos.GODMODE
             }
         if(girando == true && abierta ==false)
             {
-                angulo -= (elapsedTime / 3) * 1.6f;
-                if (angulo <= 0)
+                angulo -= (elapsedTime / 3) * 1.605f;
+                if (angulo <= 0.05)
                 {
-                    angulo = 0f;
+                    angulo = 0.05f;
                     girando = false;
                     EjemploAlumno.esperandoPuerta = false;
                     abierta = true;
