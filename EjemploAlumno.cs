@@ -63,7 +63,7 @@ namespace AlumnoEjemplos.GODMODE
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         float tiempo;
         float tiempoIluminacion;
-        Puerta puerta1, puerta2, puerta3, puerta4, puerta5;
+        Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria;
         TgcSkeletalMesh meshEnemigo;
@@ -151,8 +151,9 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-1455f, 0f, 262f), new Vector3(-1255f, 1.95f, 462f), new Vector3(-1359f, 1f, 430f));
-            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-55.7f, -52.15f, -51f), new Vector3(55f, 52.15f, 51f), new Vector3(4f, 2.15f, 1f));
+            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(1155f, 0f, -862f), new Vector3(1355f, 1.95f, -670f), new Vector3(1198f, 1f, -752f));
+            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.55f, 2.15f, 1f));
+            
             #endregion
 
             #region Configuracion de camara
@@ -228,12 +229,16 @@ namespace AlumnoEjemplos.GODMODE
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
             puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
-            puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1359f, 1f, 430f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
+            puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1360f, 1f, 436f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f));
+            puerta6 = new Puerta(alumnoMediaFolder, new Vector3(1198f, 1f, -752f), new Vector3(4.55f, 2.15f, 1f), new Vector3(0f, 3.1f, 0f));
+            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -249f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f));
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
             meshesExtra.Add(puerta4.mesh);
             meshesExtra.Add(puerta5.mesh);
+            meshesExtra.Add(puerta6.mesh);
+            meshesExtra.Add(puerta7.mesh);
 
             #endregion
 
@@ -260,8 +265,11 @@ namespace AlumnoEjemplos.GODMODE
             manejarPuerta(puerta3);
             manejarPuerta(puerta4);
             manejarPuerta(puerta5);
-            puerta5.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"];
-            puerta5.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
+            manejarPuerta(puerta6);
+            manejarPuerta(puerta7);
+            puerta6.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"];
+            puerta6.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
+            
 
             #endregion
 
