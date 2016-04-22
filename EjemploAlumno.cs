@@ -81,7 +81,7 @@ namespace AlumnoEjemplos.GODMODE
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
         Recarga[] recargas;
-        Objetivo[] objetivos = new Objetivo[3];
+        Objetivo copa,espada,locket;
         int iteracion = 0;
         #endregion
 
@@ -247,13 +247,17 @@ namespace AlumnoEjemplos.GODMODE
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
             #endregion
-
+            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1100f, 10f,-850f), new Vector3(0.1f, 0.1f, 0.1f));
+            espada = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\espada-TgcScene.xml", new Vector3(829f, 0f, 821f), new Vector3(0.1f, 0.1f, 0.1f));
+            locket = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\locket-TgcScene.xml", new Vector3(-1447f, 30f,1023f), new Vector3(0.02f,0.02f,0.02f));
+            locket.mesh.rotateY(-0.7f);
+            espada.mesh.rotateZ(1f);
         }
 
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
-        {
+        {   
             iteracion++;
             objetosColisionablesCambiantes.Clear();
             todosObjetosColisionables.Clear();
@@ -359,7 +363,9 @@ namespace AlumnoEjemplos.GODMODE
             foreach (TgcMesh mesh in todosLosMeshesIluminables)
             {
                if(lightEnable)
-                {   if(ObjetoIluminacion==0) { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/180), temblorLuz); } else
+                {   if(ObjetoIluminacion==0) { //miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/180), temblorLuz);
+                        miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f , temblorLuz);
+                    } else
                     {
                         miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f* (tiempoIluminacion / 180), temblorLuz);
                     }
@@ -470,6 +476,23 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Drawer2D.endDrawSprite();
             #endregion
 
+            #region Manejo de Objetos a Buscar
+            if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
+            {
+                copa.encontrado = true;
+            }
+            if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 40f)
+            {
+                espada.encontrado = true;
+            }
+            if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
+            {
+                locket.encontrado = true;
+            }
+            espada.flotar(random, elapsedTime,10f);
+            copa.flotar(random, elapsedTime,10f);
+            locket.flotar(random, elapsedTime, 30f);
+            #endregion
             #region Ejemplo de input teclado
             ///////////////INPUT//////////////////
 
@@ -488,14 +511,15 @@ namespace AlumnoEjemplos.GODMODE
                 ObjetoIluminacion = 2;
             }
 
-           /* //Capturar Input Mouse
-            if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
-            {
-                //Boton izq apretado
-            }*/
-   
-       
+            /* //Capturar Input Mouse
+             if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
+             {
+                 //Boton izq apretado
+             }*/
+
+
             #endregion
+            
         }
 
         public override void close()

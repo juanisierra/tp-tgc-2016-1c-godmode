@@ -14,17 +14,27 @@ namespace AlumnoEjemplos.GODMODE
     class Objetivo
     {
         private static TgcSceneLoader cargador;
-        public float tiempoAparicion = 15;
         public TgcMesh mesh;
-
-        public Objetivo(String alumnoMediaFolder, Vector3 posicion)
+        public Boolean encontrado;
+        public Objetivo(String alumnoMediaFolder, String textura, Vector3 posicion,Vector3 escala)
         {
             cargador = new TgcSceneLoader();
-            TgcScene nueva = cargador.loadSceneFromFile(alumnoMediaFolder + "GODMODE\\Media\\battery-TgcScene.xml",
+            TgcScene nueva = cargador.loadSceneFromFile(alumnoMediaFolder + textura,
                 alumnoMediaFolder + "GODMODE\\Media\\");
             mesh = nueva.Meshes[0];
-            mesh.Scale = new Vector3(0.03f, 0.03f, 0.03f);
+            mesh.Scale = escala;
             mesh.Position = posicion;
+            encontrado = false;
         }
+  
+            public void flotar(float random, float elapsedTime,float alturaOriginal)
+        {
+            mesh.Position = new Vector3(mesh.Position.X, alturaOriginal + random, mesh.Position.Z);
+            if (!encontrado)
+            {
+                mesh.render();
+            }
+        }
+    
     }
 }
