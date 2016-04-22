@@ -75,7 +75,7 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = true;
+        Boolean enemigoActivo = false;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
@@ -148,7 +148,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-130f, 0f, 728f), new Vector3(80f, 1.95f, 1030f), new Vector3(-21f, 1f, 948.8f));
+            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-1455f, 0f, 262f), new Vector3(-1255f, 1.95f, 462f), new Vector3(-1359f, 1f, 430f));
             GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-55.7f, -52.15f, -51f), new Vector3(55f, 52.15f, 51f), new Vector3(4f, 2.15f, 1f));
             #endregion
 
@@ -225,12 +225,12 @@ namespace AlumnoEjemplos.GODMODE
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             puerta3 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
             puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f));
-           // puerta5 = new Puerta(alumnoMediaFolder, new Vector3(250f, 1f, 58.5f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, -3.15f, 0f));
+            puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1359f, 1f, 430f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
             meshesExtra.Add(puerta4.mesh);
-          //  meshesExtra.Add(puerta5.mesh);
+            meshesExtra.Add(puerta5.mesh);
 
             #endregion
 
@@ -253,19 +253,19 @@ namespace AlumnoEjemplos.GODMODE
             manejarPuerta(puerta2); //Hacer foreach
             manejarPuerta(puerta3);
             manejarPuerta(puerta4);
-          //  manejarPuerta(puerta5);
-          //  puerta4.mesh.Position = (Vector3) GuiController.Instance.Modifiers["posPuerta"];
-           // puerta4.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
+            manejarPuerta(puerta5);
+            puerta5.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"];
+            puerta5.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
 
             #endregion
 
             //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
 
-            
-            GuiController.Instance.UserVars.setValue("a",tiempo);
+
+            GuiController.Instance.UserVars.setValue("a", tiempo);
             //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
-            
+
             #region Camara, Colisiones y Deteccion
             List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
             todosObjetosColisionables.AddRange(objetosColisionables);
@@ -278,17 +278,19 @@ namespace AlumnoEjemplos.GODMODE
             }
 
             #region Deteccion del jugador
+            
             if (enemigoActivo)
             {
                 int cantColisiones = 0;
                 direccionRayo = camara.getPosition() - enemigo.getPosicion();
                 rayo.Origin = enemigo.getPosicion();
                 rayo.Direction = direccionRayo;
-                foreach (TgcBoundingBox obstaculo in objetosColisionables)
+                foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
                 {
                     if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
                         cantColisiones++;
                 }
+
                 if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
                 {
                     lastKnownPos = esferaCamara.Position;
