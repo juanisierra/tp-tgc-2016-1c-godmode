@@ -52,6 +52,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcScene tgcScene; // Crea la escena
         List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
         List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
+        List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
@@ -70,17 +71,18 @@ namespace AlumnoEjemplos.GODMODE
         Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
         bool corriendo = false;
         TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
-        bool perdido = false;
+        bool perdido = true;
         Vector3 direccionRayo = new Vector3();
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = false;
+        Boolean enemigoActivo = true;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
         Recarga[] recargas;
         Objetivo[] objetivos = new Objetivo[3];
+        int iteracion = 0;
         #endregion
 
         string alumnoMediaFolder;
@@ -133,6 +135,7 @@ namespace AlumnoEjemplos.GODMODE
             meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
             meshEnemigo.rotateY(FastMath.PI / 2);
             enemigo.setMesh(meshEnemigo);
+            lastKnownPos = enemigo.getPosicion();
             #endregion
 
             #region Modifiers
@@ -246,6 +249,9 @@ namespace AlumnoEjemplos.GODMODE
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
+            iteracion++;
+            objetosColisionablesCambiantes.Clear();
+            todosObjetosColisionables.Clear();
             GuiController.Instance.UserVars.setValue("perdido", perdido);
 
             #region Manejo de Puertas
@@ -267,7 +273,7 @@ namespace AlumnoEjemplos.GODMODE
             //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
 
             #region Camara, Colisiones y Deteccion
-            List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
+           
             todosObjetosColisionables.AddRange(objetosColisionables);
             todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
             camara.objetosColisionables = todosObjetosColisionables;
@@ -297,10 +303,12 @@ namespace AlumnoEjemplos.GODMODE
                     perdido = true;
                 }
 
-                if (cantColisiones <= 2)
+                if (cantColisiones <= 2 && iteracion!=1) //En la primera iteracion no se carga bien el escenario y no funciona
                 {
                     perdido = false; //Si se ve al jugador, indicar que se lo encontro
-                    enemigoActivo = true;
+                    enemigoActivo = true; //RARO
+                    tiempoBuscando = 15; //Volvemos a reiniciar el tiempo que nos busca si no estamos
+ 
                 }
             }
             #endregion
@@ -500,13 +508,14 @@ namespace AlumnoEjemplos.GODMODE
                  esperandoPuerta = true;
              }
              puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
-             puerta.mesh.updateBoundingBox();
- 
-             puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
- 
-             puerta.mesh.BoundingBox.setRenderColor(Color.White);
-             puerta.mesh.BoundingBox.render();
-             objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
+            if (!puerta.abierta)
+            {
+                puerta.mesh.updateBoundingBox();
+                puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
+                objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
+                puerta.mesh.BoundingBox.setRenderColor(Color.White);
+                puerta.mesh.BoundingBox.render();
+            }
          }
 
     }
