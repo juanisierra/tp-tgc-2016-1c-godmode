@@ -80,6 +80,7 @@ namespace AlumnoEjemplos.GODMODE
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
+        TgcStaticSound sonidoObjeto,sonidoPuertas;
         Recarga[] recargas;
         Objetivo copa,espada,locket;
         int iteracion = 0;
@@ -236,9 +237,11 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
            
             sonidoPilas = new TgcStaticSound();
-            sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\torno 1.wav");
-           
-            //sonidoObjetos.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\supersónico cueva.wav");
+            sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\torno 3.wav");
+            sonidoObjeto = new TgcStaticSound();
+            sonidoObjeto.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\supersónico cueva.wav");
+            sonidoPuertas = new TgcStaticSound();
+            sonidoPuertas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\pisada crujiente izda.wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -280,7 +283,7 @@ namespace AlumnoEjemplos.GODMODE
             puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-51f, 1f, 649.04f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f)); // a nuestra izquierda
             puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1360f, 1f, 432f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f)); // siguiendo el camino indicado por la 3
             puerta6 = new Puerta(alumnoMediaFolder, new Vector3(1200.8f, 1f, -749f), new Vector3(4.65f, 2.15f, 1f), new Vector3(0f, 3.1f, 0f)); // siguiendo el camino indicado por la 2
-            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -289f), new Vector3(4.05f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f)); //ULTIMOA PUERTA
+            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -248f), new Vector3(4.05f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f)); //ULTIMOA PUERTA
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
@@ -354,14 +357,12 @@ namespace AlumnoEjemplos.GODMODE
                 manejarPuerta(puerta4);
                 manejarPuerta(puerta5);
                 manejarPuerta(puerta6);
-                if (copa.encontrado && locket.encontrado && espada.encontrado)
+                if ((copa.encontrado && locket.encontrado && espada.encontrado) || iteracion ==1)
                 {
                     manejarPuerta(puerta7);
                 }
 
-                /* puerta7.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"]; No usar mas!!
-                 puerta7.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];*/
-
+                
 
                 #endregion
 
@@ -542,10 +543,11 @@ namespace AlumnoEjemplos.GODMODE
                         if (!pila.usada)
                         {
                             tiempoIluminacion = 180f;
+                            sonidoPilas.play();
                         }
                         pila.usada = true;
                         tiempoIluminacion = 180f;
-                        sonidoPilas.play();
+                       
                     }
                     pila.flotar(random, elapsedTime);
                     GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
@@ -582,15 +584,17 @@ namespace AlumnoEjemplos.GODMODE
 
                 #region Manejo de Objetos a Buscar
                 if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
-                {
+                { if (copa.encontrado == false) sonidoObjeto.play(false);
                     copa.encontrado = true;
                 }
                 if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
                 {
+                    if (espada.encontrado == false) sonidoObjeto.play(false);
                     espada.encontrado = true;
                 }
                 if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
                 {
+                    if (locket.encontrado == false) sonidoObjeto.play(false);
                     locket.encontrado = true;
                 }
                 espada.flotar(random, elapsedTime, 10f);
@@ -640,6 +644,7 @@ namespace AlumnoEjemplos.GODMODE
          {
              if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
              {
+                sonidoPuertas.play(false);
                  puerta.girando = true;
                  esperandoPuerta = true;
              }
