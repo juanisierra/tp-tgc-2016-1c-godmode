@@ -151,8 +151,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(1155f, 0f, -862f), new Vector3(1355f, 1.95f, -670f), new Vector3(1198f, 1f, -752f));
-            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.55f, 2.15f, 1f));
+            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(835f, 0f, -1122f), new Vector3(1975f, 1.95f, 667f), new Vector3(1740f, 1f, -248f));
+            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.1f, 2.15f, 1f));
             
             #endregion
 
@@ -225,13 +225,13 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Puertas
-            puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-253f, 1f, -69f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, 0f, 0f));
-            puerta2 = new Puerta(alumnoMediaFolder, new Vector3(49f, 1f, -249f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f));
-            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(253f, 1f, 60f), new Vector3(5.7f, 2.15f, 1f), new Vector3(0f, -3.17f, 0f));
-            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-21f, 1f, 948.8f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.6f, 0f)); // Adealantar al otro pasillo
-            puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1360f, 1f, 436f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f));
-            puerta6 = new Puerta(alumnoMediaFolder, new Vector3(1198f, 1f, -752f), new Vector3(4.55f, 2.15f, 1f), new Vector3(0f, 3.1f, 0f));
-            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -249f), new Vector3(4f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f)); //ULTIMOA PUERTA
+            puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-251f, 1f, -71f), new Vector3(5.85f, 2.15f, 1f), new Vector3(0f, -0.05f, 0f));//puerta que esta atras nuestro cuando empezamos
+            puerta2 = new Puerta(alumnoMediaFolder, new Vector3(50.4f, 1f, -252f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f)); // a nuestra derecha
+            puerta3 = new Puerta(alumnoMediaFolder, new Vector3(251.5f, 1f, 61f), new Vector3(5.85f, 2.15f, 1f), new Vector3(0f, -3.17f, 0f)); //puerta frente a la cual empezamos
+            puerta4 = new Puerta(alumnoMediaFolder, new Vector3(-51f, 1f, 649.04f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f)); // a nuestra izquierda
+            puerta5 = new Puerta(alumnoMediaFolder, new Vector3(-1360f, 1f, 432f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, 1.55f, 0f)); // siguiendo el camino indicado por la 3
+            puerta6 = new Puerta(alumnoMediaFolder, new Vector3(1200.8f, 1f, -749f), new Vector3(4.65f, 2.15f, 1f), new Vector3(0f, 3.1f, 0f)); // siguiendo el camino indicado por la 2
+            puerta7 = new Puerta(alumnoMediaFolder, new Vector3(1740f, 1f, -289f), new Vector3(4.05f, 2.15f, 1f), new Vector3(0f, 1.54f, 0f)); //ULTIMOA PUERTA
             meshesExtra.Add(puerta1.mesh);
             meshesExtra.Add(puerta2.mesh);
             meshesExtra.Add(puerta3.mesh);
@@ -277,8 +277,9 @@ namespace AlumnoEjemplos.GODMODE
             {
                 manejarPuerta(puerta7);
             }
-            puerta6.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"];
-            puerta6.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];
+
+           /* puerta7.mesh.Position = (Vector3)GuiController.Instance.Modifiers["posPuerta"]; No usar mas!!
+            puerta7.mesh.Scale = (Vector3)GuiController.Instance.Modifiers["escaladoPuerta"];*/
             
 
             #endregion
