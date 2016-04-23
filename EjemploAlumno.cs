@@ -76,7 +76,7 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = false;
+        Boolean enemigoActivo = true;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
@@ -90,7 +90,7 @@ namespace AlumnoEjemplos.GODMODE
         const int VELOCIDAD_ENEMIGO = 70;
 
         public override void init()
-        {
+        {   
             tiempoBuscando = 15;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
@@ -185,9 +185,10 @@ namespace AlumnoEjemplos.GODMODE
             sonidoEnemigo.MinDistance = 10f;
             sonidos.Add(sonidoEnemigo);
             GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
-            sonidoEnemigo.play(true);
+           
             sonidoPilas = new TgcStaticSound();
             sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\torno 1.wav");
+           
             //sonidoObjetos.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\supersónico cueva.wav");
             #endregion
 
@@ -299,6 +300,7 @@ namespace AlumnoEjemplos.GODMODE
             if (!esperandoPuerta)
             {
                 camara.updateCamera();
+
             }
 
             #region Deteccion del jugador
@@ -412,6 +414,7 @@ namespace AlumnoEjemplos.GODMODE
             {
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f)
                 {
+                    sonidoEnemigo.play();
                     if (!perdido)
                         enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
                     else
@@ -424,6 +427,7 @@ namespace AlumnoEjemplos.GODMODE
                 enemigo.render();
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
                 {
+                    sonidoEnemigo.play();
                     tiempoBuscando = 15;
                     meshEnemigo.Position = new Vector3(500, 0, 0);
                     enemigoActivo = false;

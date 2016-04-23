@@ -8,6 +8,7 @@ using Microsoft.DirectX.DirectInput;
 using TgcViewer.Utils.Input;
 using TgcViewer;
 using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.Sound;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -48,6 +49,9 @@ namespace AlumnoEjemplos.GODMODE
         public static bool moving;
         public TgcBoundingSphere characterSphere;
         public List<TgcBoundingBox> objetosColisionables;
+        public TgcStaticSound sonidoPisada1,sonidoPisada2;
+        public float iteracion;
+        public bool pisada;
         public void init()
         {
             collisionManager = new SphereCollisionManager();
@@ -57,12 +61,17 @@ namespace AlumnoEjemplos.GODMODE
 
         public Camara()
         {
+            GuiController.Instance.UserVars.addVar("pisada") ;
             Control focusWindows = GuiController.Instance.D3dDevice.CreationParameters.FocusWindow;
             mouseCenter = focusWindows.PointToScreen(
                 new Point(
                     focusWindows.Width / 2,
                     focusWindows.Height / 2)
                     );
+            sonidoPisada1 = new TgcStaticSound();
+            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1.wav");
+            sonidoPisada2 = new TgcStaticSound();
+            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2.wav");
         }
 
         ~Camara()
@@ -154,8 +163,9 @@ namespace AlumnoEjemplos.GODMODE
 
         public void updateCamera()
         {
+           
             float elapsedTime = GuiController.Instance.ElapsedTime;
-
+            iteracion += elapsedTime;
 
             collisionManager.GravityEnabled = (bool)GuiController.Instance.Modifiers["HabilitarGravedad"];
             collisionManager.GravityForce = (Vector3)GuiController.Instance.Modifiers["Gravedad"];
@@ -168,6 +178,19 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+                if (iteracion > 0.5f)
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play(false);
+                      
+                    } else
+                    {
+                        sonidoPisada2.play(false);
+                        
+                    }
+                    pisada = !pisada;
+                }
             }
 
             //Backward
@@ -176,6 +199,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(-MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+                if (iteracion > 0.5f)
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play(false);
+                       
+                    }
+                    else
+                    {
+                        sonidoPisada2.play(false);
+                        
+                    }
+                    pisada = !pisada;
+                }
             }
 
             //Strafe right
@@ -184,6 +221,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(MovementSpeed * elapsedTime);
                movimiento = v;
                moving = true;
+                if (iteracion > 0.5f)
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play(false);
+                        
+                    }
+                    else
+                    {
+                        sonidoPisada2.play(false);
+                        
+                    }
+                    pisada = !pisada;
+                }
             }
 
             //Strafe left
@@ -192,6 +243,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(-MovementSpeed * elapsedTime);
                movimiento = v;
                 moving = true;
+                if (iteracion > 0.5f)
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play(false);
+                        
+                    }
+                    else
+                    {
+                        sonidoPisada2.play(false);
+                        
+                    }
+                    pisada = !pisada;
+                }
             }
 
             //Jump
@@ -233,7 +298,8 @@ namespace AlumnoEjemplos.GODMODE
 
             updateViewMatrix(GuiController.Instance.D3dDevice);
 
-
+            if (iteracion > 0.5f) iteracion = 0;
+            GuiController.Instance.UserVars.setValue("pisada", pisada);
         }
        
 
