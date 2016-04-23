@@ -141,8 +141,6 @@ namespace AlumnoEjemplos.GODMODE
             #region Modifiers
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
-
-
             //Modifiers para desplazamiento del personaje
   
             GuiController.Instance.Modifiers.addBoolean("HabilitarGravedad", "Habilitar Gravedad", false);
@@ -151,8 +149,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(835f, 0f, -1122f), new Vector3(1975f, 1.95f, 667f), new Vector3(1740f, 1f, -248f));
-            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.1f, 2.15f, 1f));
+           /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(835f, 0f, -1122f), new Vector3(1975f, 1.95f, 667f), new Vector3(1740f, 1f, -248f));
+            GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.1f, 2.15f, 1f));*/
             
             #endregion
 
@@ -182,14 +180,15 @@ namespace AlumnoEjemplos.GODMODE
             /* ACLARACION: para usar ListenerTracking es necesario pasar un mesh por parametro. Como la esfera del jugador no tiene, el envio
              * del sonido se hace de esfera a enemigo; es decir, el ListenerTracking se hace sobre el enemigo.*/
             #region Sonido
-           // sonidos = new List<Tgc3dSound>();
-            //sonidoEnemigo = new Tgc3dSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav", esferaCamara.Position);
-            //sonidoEnemigo.MinDistance = 10f;
-            //sonidos.Add(sonidoEnemigo);
-            //GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
-            //sonidoEnemigo.play(true);
-            //sonidoPilas = new TgcStaticSound();
-            //sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\Mi abuelo dice....wav");
+            sonidos = new List<Tgc3dSound>();
+            sonidoEnemigo = new Tgc3dSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\pies, arrastrar.wav", esferaCamara.Position);
+            sonidoEnemigo.MinDistance = 10f;
+            sonidos.Add(sonidoEnemigo);
+            GuiController.Instance.DirectSound.ListenerTracking = enemigo.getMesh();
+            sonidoEnemigo.play(true);
+            sonidoPilas = new TgcStaticSound();
+            sonidoPilas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\torno 1.wav");
+            //sonidoObjetos.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\supersónico cueva.wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -334,7 +333,7 @@ namespace AlumnoEjemplos.GODMODE
 
             #endregion
 
-          //  sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
+            sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
 
             #region Luz Linterna
             List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
@@ -428,7 +427,7 @@ namespace AlumnoEjemplos.GODMODE
                     tiempoBuscando = 15;
                     meshEnemigo.Position = new Vector3(500, 0, 0);
                     enemigoActivo = false;
-                  //  sonidoEnemigo.stop();
+                    sonidoEnemigo.stop();
                 }
             }
             #endregion
@@ -447,11 +446,10 @@ namespace AlumnoEjemplos.GODMODE
                     if (!pila.usada)
                     {
                         tiempoIluminacion = 180f;
-                        //sonidoPilas.play();
                     }
                     pila.usada = true;
                     tiempoIluminacion = 180f;
-                   // sonidoPilas.play();
+                    sonidoPilas.play();
                 }
                 pila.flotar(random, elapsedTime);
                 GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
@@ -532,8 +530,8 @@ namespace AlumnoEjemplos.GODMODE
         public override void close()
         {
             tgcScene.disposeAll();
-           // sonidoEnemigo.dispose();
-            //sonidoPilas.dispose();
+            sonidoEnemigo.dispose();
+            sonidoPilas.dispose();
             enemigo.getMesh().dispose();
             for (int i = 0; i < 4; i++)
                 recargas[i].dispose();
