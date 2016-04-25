@@ -19,7 +19,7 @@ namespace AlumnoEjemplos.GODMODE
     /// </summary>
     public class SphereCollisionManager
     {
-        const float EPSILON = 0.05f;
+        const float EPSILON = 0.005f;
 
         private Vector3 gravityForce;
         /// <summary>
@@ -137,7 +137,7 @@ namespace AlumnoEjemplos.GODMODE
         public void doCollideWithWorld(TgcBoundingSphere characterSphere, Vector3 movementVector, List<TgcBoundingBox> obstaculos, int recursionDepth)
         {
             //Limitar recursividad
-            if (recursionDepth > 5)
+            if (recursionDepth > 3)//Estaba en 5
             {
                 return;
             }

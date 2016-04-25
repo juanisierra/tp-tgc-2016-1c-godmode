@@ -76,11 +76,11 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        Boolean enemigoActivo = true;
+        Boolean enemigoActivo = false;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
-        TgcStaticSound sonidoObjeto,sonidoPuertas;
+        TgcStaticSound sonidoObjeto,sonidoPuertas,sonidoGrito;
         Recarga[] recargas;
         Objetivo copa,espada,locket;
         int iteracion = 0;
@@ -100,6 +100,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void init()
         {
+            
             #region Menu
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
@@ -163,7 +164,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas = new Recarga[4];
             recargas[0] = new Recarga(alumnoMediaFolder, new Vector3(-1508f, 20f, 107f));
             recargas[1] = new Recarga(alumnoMediaFolder, new Vector3(-1430.953f, 20f, 966.6811f));
-            recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1274.0464f, 20f, -458f));
+            recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
             tiempoIluminacion = 180; // 60 segundos * 3 = 3 minutos
@@ -242,6 +243,8 @@ namespace AlumnoEjemplos.GODMODE
             sonidoObjeto.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\supersónico cueva.wav");
             sonidoPuertas = new TgcStaticSound();
             sonidoPuertas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\pisada crujiente izda.wav");
+            sonidoGrito = new TgcStaticSound();
+            sonidoGrito.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -301,7 +304,7 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Objetos a buscar
-            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1100f, 30f,-850f), new Vector3(0.1f, 0.1f, 0.1f));
+            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1274f, 30f,-458f), new Vector3(0.1f, 0.1f, 0.1f));
             espada = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\espada-TgcScene.xml", new Vector3(829f, 0f, 821f), new Vector3(0.1f, 0.1f, 0.1f));
             locket = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\locket-TgcScene.xml", new Vector3(-1447f, 30f,1023f), new Vector3(0.02f,0.02f,0.02f));
             locket.mesh.rotateY(-0.7f);
@@ -419,6 +422,9 @@ namespace AlumnoEjemplos.GODMODE
 
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
 
+
+
+
                 #region Luz Linterna
                 List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
@@ -498,36 +504,7 @@ namespace AlumnoEjemplos.GODMODE
                 esferaCamara.setRenderColor(Color.Aqua);
                 esferaCamara.render();
 
-                #region Mover Enemigo
-                if (enemigoActivo)
-                {
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f)
-                    {
-                        sonidoEnemigo.play();
-                        if (!perdido)
-                            enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
-                        else
-                        {
-                            enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
-                            tiempoBuscando -= elapsedTime;
-                        }
-                    }
-                    enemigo.actualizarAnim();
-                    enemigo.render();
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
-                    {
-                        sonidoEnemigo.play();
-                        tiempoBuscando = 15;
-                        meshEnemigo.Position = new Vector3(500, 0, 0);
-                        enemigoActivo = false;
-                        sonidoEnemigo.stop();
-                    }
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X,50,enemigo.getPosicion().Z))) < 20f)
-                    {
-                        gameOver = true;
-                    }
-                }
-                #endregion
+                
 
                 #region Calculos Tiempo Iluminacion
 
@@ -582,25 +559,6 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.Drawer2D.endDrawSprite();
                 #endregion
 
-                #region Manejo de Objetos a Buscar
-                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
-                { if (copa.encontrado == false) sonidoObjeto.play(false);
-                    copa.encontrado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
-                {
-                    if (espada.encontrado == false) sonidoObjeto.play(false);
-                    espada.encontrado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
-                {
-                    if (locket.encontrado == false) sonidoObjeto.play(false);
-                    locket.encontrado = true;
-                }
-                espada.flotar(random, elapsedTime, 10f);
-                copa.flotar(random, elapsedTime, 30f);
-                locket.flotar(random, elapsedTime, 30f);
-                #endregion
                 #region Ejemplo de input teclado
                 ///////////////INPUT//////////////////
 
@@ -626,6 +584,62 @@ namespace AlumnoEjemplos.GODMODE
                  }*/
 
 
+                #endregion
+
+                #region Manejo de Objetos a Buscar
+                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
+                {
+                    if (copa.encontrado == false) sonidoObjeto.play(false);
+                    copa.encontrado = true;
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
+                {
+                    if (espada.encontrado == false) sonidoObjeto.play(false);
+                    if ((!enemigoActivo) && (espada.encontrado == false))
+                    {
+                        ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
+                    }
+                    espada.encontrado = true;
+                    
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
+                {
+                    if (locket.encontrado == false) sonidoObjeto.play(false);
+                    locket.encontrado = true;
+                }
+                espada.flotar(random, elapsedTime, 10f);
+                copa.flotar(random, elapsedTime, 30f);
+                locket.flotar(random, elapsedTime, 30f);
+                #endregion
+                #region Mover Enemigo
+                if (enemigoActivo)
+                {
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f)
+                    {
+                        sonidoEnemigo.play();
+                        if (!perdido)
+                            enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
+                        else
+                        {
+                            enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+                            tiempoBuscando -= elapsedTime;
+                        }
+                    }
+                    enemigo.actualizarAnim();
+                    enemigo.render();
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
+                    {
+                        sonidoEnemigo.play();
+                        tiempoBuscando = 15;
+                        meshEnemigo.Position = new Vector3(500, 0, 0);
+                        enemigoActivo = false;
+                        sonidoEnemigo.stop();
+                    }
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 20f)
+                    {
+                        gameOver = true;
+                    }
+                }
                 #endregion
             }
         }
@@ -655,8 +669,20 @@ namespace AlumnoEjemplos.GODMODE
                 puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
                 objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
             }
+            
+
+
          }
-        private void reiniciarJuego()
+    private void ponerEnemigo(Vector3 posicion)
+        {   if (!enemigoActivo)
+            {
+                enemigo.position(posicion); //PONER ENEMIGO
+                lastKnownPos = enemigo.getPosicion();
+                enemigoActivo = true;
+                sonidoGrito.play();
+            }
+        }
+private void reiniciarJuego()
         {
             tiempoBuscando = 15;
             esperandoPuerta = false;

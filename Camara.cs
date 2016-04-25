@@ -57,7 +57,8 @@ namespace AlumnoEjemplos.GODMODE
         public void init()
         {
             collisionManager = new SphereCollisionManager();
-            collisionManager.GravityEnabled = true;
+            collisionManager.GravityEnabled = false;
+            collisionManager.SlideFactor = 5.6f;
         }
 
 
@@ -171,9 +172,7 @@ namespace AlumnoEjemplos.GODMODE
             float elapsedTime = GuiController.Instance.ElapsedTime;
             iteracion += elapsedTime;
 
-            collisionManager.GravityEnabled = (bool)GuiController.Instance.Modifiers["HabilitarGravedad"];
-            collisionManager.GravityForce = (Vector3)GuiController.Instance.Modifiers["Gravedad"];
-            collisionManager.SlideFactor = (float)GuiController.Instance.Modifiers["SlideFactor"];
+           // collisionManager.SlideFactor = (float)GuiController.Instance.Modifiers["SlideFactor"];
 
             movimiento = new Vector3(0, 0, 0);
             //Forward

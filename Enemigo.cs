@@ -14,7 +14,7 @@ namespace AlumnoEjemplos.GODMODE
 {
     class Enemigo
     {
-        private TgcSkeletalMesh cuerpo;
+       public TgcSkeletalMesh cuerpo;
 
         public Vector3 getPosicion ()
         {
@@ -24,6 +24,10 @@ namespace AlumnoEjemplos.GODMODE
         public void mover(Vector3 posicion)
         {
             cuerpo.move(posicion);
+        }
+        public void position(Vector3 posicion)
+        {
+            cuerpo.Position = posicion;
         }
 
         public void setMesh(TgcSkeletalMesh meshNuevo)
