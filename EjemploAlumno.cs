@@ -333,21 +333,21 @@ namespace AlumnoEjemplos.GODMODE
                     gameOver = false;
                     reiniciarJuego();
                 }
-            } 
-                if(ganado)
+            }
+            if (ganado)
+            {
+                textoGanador.render();
+                textoSpace.render();
+                if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
                 {
-                    textoGanador.render();
-                    textoSpace.render();
-                    if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
-                    {
-                        enMenu = true;
-                        gameOver = false;
-                        ganado = false;
-                        reiniciarJuego();
-                    }
+                    enMenu = true;
+                    gameOver = false;
+                    ganado = false;
+                    reiniciarJuego();
                 }
-            
-            else if(!enMenu && !gameOver && !ganado) {
+            }
+
+            else if (!enMenu && !gameOver && !ganado) {
                 iteracion++;
                 objetosColisionablesCambiantes.Clear();
                 todosObjetosColisionables.Clear();
@@ -360,12 +360,12 @@ namespace AlumnoEjemplos.GODMODE
                 manejarPuerta(puerta4);
                 manejarPuerta(puerta5);
                 manejarPuerta(puerta6);
-                if ((copa.encontrado && locket.encontrado && espada.encontrado) || iteracion ==1)
+                if ((copa.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
                 {
                     manejarPuerta(puerta7);
                 }
 
-                
+
 
                 #endregion
 
@@ -504,7 +504,7 @@ namespace AlumnoEjemplos.GODMODE
                 esferaCamara.setRenderColor(Color.Aqua);
                 esferaCamara.render();
 
-                
+
 
                 #region Calculos Tiempo Iluminacion
 
@@ -524,7 +524,7 @@ namespace AlumnoEjemplos.GODMODE
                         }
                         pila.usada = true;
                         tiempoIluminacion = 180f;
-                       
+
                     }
                     pila.flotar(random, elapsedTime);
                     GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
@@ -586,6 +586,21 @@ namespace AlumnoEjemplos.GODMODE
 
                 #endregion
 
+                #region Aparecer enemigo
+                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1288,50,372))) < 400f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
+                {
+                    ponerEnemigo(new Vector3(-1317f, 0f,778.95f)); 
+                }
+                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(10.55f, 50, -805.52f))) < 400f )
+                {
+                    ponerEnemigo(new Vector3(460.2749f, 0f, -791.8f));
+                }
+                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(1274f, 50f, -458f))) < 300f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
+                {
+                    ponerEnemigo(new Vector3(1615f, 0f, -525f));
+                }
+
+                #endregion
                 #region Manejo de Objetos a Buscar
                 if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
                 {

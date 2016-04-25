@@ -1761,7 +1761,7 @@
       <matIds count="1">0 </matIds>
       <textCoordsLightMapIdx count="0">
       </textCoordsLightMapIdx>
-      <vertices count="12">-1140 -10.5 1050 460 -10.5 1050 460 110.5 1050 -1140 110.5 1050 </vertices>
+      <vertices count="12">460 -10.5 1050 -1140 -10.5 1050 -1140 110.5 1050 460 110.5 1050 </vertices>
       <normals count="12">0 0 1 0 0 1 0 0 1 0 0 1 </normals>
       <texCoords count="8">12.81 0.5 0 0.5 0 0 12.81 0 </texCoords>
       <colors count="3">255 255 255 </colors>
