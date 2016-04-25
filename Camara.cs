@@ -11,7 +11,7 @@ using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.Sound;
 
 namespace AlumnoEjemplos.GODMODE
-{
+{   
     /// <summary>
     /// Camara en primera persona personalizada para niveles de Quake 3.
     /// Evita utilizar senos y cosenos
@@ -23,6 +23,7 @@ namespace AlumnoEjemplos.GODMODE
     /// 
     public class Camara : TgcCamera
     {
+        public const float tiempoPaso = 0.4f;
         SphereCollisionManager collisionManager;
         /*
          * Esta Camara es un prototipo. Esta pensada para no utilizar senos y cosenos en las rotaciones.
@@ -52,6 +53,7 @@ namespace AlumnoEjemplos.GODMODE
         public TgcStaticSound sonidoPisada1,sonidoPisada2;
         public float iteracion;
         public bool pisada;
+        public bool yaSono;
         public void init()
         {
             collisionManager = new SphereCollisionManager();
@@ -69,9 +71,9 @@ namespace AlumnoEjemplos.GODMODE
                     focusWindows.Height / 2)
                     );
             sonidoPisada1 = new TgcStaticSound();
-            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1.wav");
+            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1corta.wav");
             sonidoPisada2 = new TgcStaticSound();
-            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2.wav");
+            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2corta.wav");
         }
 
         ~Camara()
@@ -163,7 +165,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public void updateCamera()
         {
-           
+            yaSono = false;
             float elapsedTime = GuiController.Instance.ElapsedTime;
             iteracion += elapsedTime;
 
@@ -178,18 +180,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
-                if (iteracion > 0.5f)
+                if (iteracion > tiempoPaso && !yaSono)
                 {
                     if (pisada)
                     {
-                        sonidoPisada1.play(false);
+                        sonidoPisada1.play();
+                       
                       
                     } else
                     {
-                        sonidoPisada2.play(false);
+                        sonidoPisada2.play();
                         
                     }
                     pisada = !pisada;
+                    yaSono = true;
                 }
             }
 
@@ -199,19 +203,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(-MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
-                if (iteracion > 0.5f)
+                if (iteracion > tiempoPaso && !yaSono)
                 {
                     if (pisada)
                     {
-                        sonidoPisada1.play(false);
+                        sonidoPisada1.play();
                        
                     }
                     else
                     {
-                        sonidoPisada2.play(false);
+                        sonidoPisada2.play();
                         
                     }
                     pisada = !pisada;
+                    yaSono = true;
                 }
             }
 
@@ -221,19 +226,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(MovementSpeed * elapsedTime);
                movimiento = v;
                moving = true;
-                if (iteracion > 0.5f)
+                if (iteracion > tiempoPaso && !yaSono)
                 {
                     if (pisada)
                     {
-                        sonidoPisada1.play(false);
+                        sonidoPisada1.play();
                         
                     }
                     else
                     {
-                        sonidoPisada2.play(false);
+                        sonidoPisada2.play();
                         
                     }
                     pisada = !pisada;
+                    yaSono = true;
                 }
             }
 
@@ -243,19 +249,20 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(-MovementSpeed * elapsedTime);
                movimiento = v;
                 moving = true;
-                if (iteracion > 0.5f)
+                if (iteracion > tiempoPaso && !yaSono)
                 {
                     if (pisada)
                     {
-                        sonidoPisada1.play(false);
+                        sonidoPisada1.play();
                         
                     }
                     else
                     {
-                        sonidoPisada2.play(false);
+                        sonidoPisada2.play();
                         
                     }
                     pisada = !pisada;
+                    yaSono = true;
                 }
             }
 
@@ -297,8 +304,11 @@ namespace AlumnoEjemplos.GODMODE
             viewMatrix = Matrix.LookAtLH(eye, target, up);
 
             updateViewMatrix(GuiController.Instance.D3dDevice);
-
-            if (iteracion > 0.5f) iteracion = 0;
+   
+            if (iteracion > tiempoPaso)
+            {
+                iteracion = 0;
+            }
             GuiController.Instance.UserVars.setValue("pisada", pisada);
         }
        
