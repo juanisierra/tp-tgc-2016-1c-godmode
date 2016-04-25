@@ -72,9 +72,9 @@ namespace AlumnoEjemplos.GODMODE
                     );
             sonidoPisada1 = new TgcStaticSound();
 
-            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada calle dcha.wav");
+            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1corta.wav");
             sonidoPisada2 = new TgcStaticSound();
-            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada calle izda.wav");
+            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2corta.wav");
 
         }
 
