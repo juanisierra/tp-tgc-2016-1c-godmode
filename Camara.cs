@@ -71,9 +71,11 @@ namespace AlumnoEjemplos.GODMODE
                     focusWindows.Height / 2)
                     );
             sonidoPisada1 = new TgcStaticSound();
-            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1corta.wav");
+
+            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada calle dcha.wav");
             sonidoPisada2 = new TgcStaticSound();
-            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2corta.wav");
+            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada calle izda.wav");
+
         }
 
         ~Camara()
@@ -180,7 +182,10 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+
                 if (iteracion > tiempoPaso && !yaSono)
+
+
                 {
                     if (pisada)
                     {
@@ -203,7 +208,9 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(-MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+
                 if (iteracion > tiempoPaso && !yaSono)
+
                 {
                     if (pisada)
                     {
@@ -226,7 +233,9 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(MovementSpeed * elapsedTime);
                movimiento = v;
                moving = true;
+
                 if (iteracion > tiempoPaso && !yaSono)
+
                 {
                     if (pisada)
                     {
@@ -249,7 +258,9 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveSide(-MovementSpeed * elapsedTime);
                movimiento = v;
                 moving = true;
+
                 if (iteracion > tiempoPaso && !yaSono)
+
                 {
                     if (pisada)
                     {
@@ -304,11 +315,12 @@ namespace AlumnoEjemplos.GODMODE
             viewMatrix = Matrix.LookAtLH(eye, target, up);
 
             updateViewMatrix(GuiController.Instance.D3dDevice);
-   
+
             if (iteracion > tiempoPaso)
             {
                 iteracion = 0;
             }
+
             GuiController.Instance.UserVars.setValue("pisada", pisada);
         }
        
