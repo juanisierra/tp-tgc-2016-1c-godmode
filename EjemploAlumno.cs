@@ -111,14 +111,14 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 38, FontStyle.Bold | FontStyle.Italic));
             textoEmpezarJuego.Size = new Size(500, 120);
             textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height/2, 0));
+
             textoDescripcion = new TgcText2d();
-            textoDescripcion.Text = "Descripcion del juego, encontrar los 3 objetos para poder abrir la puerta y sali, pero sin que te atrapen, alguien cambielo, presionen space para jugar";
+            textoDescripcion.Text = "El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. presionen space para jugar";
             textoDescripcion.Color = Color.White;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
             textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
             textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height / 2);
-
-
+            
             textoGameOver = new TgcText2d();
             textoGameOver.Text = "GAME OVER";
             textoGameOver.Color = Color.Red;
@@ -126,6 +126,7 @@ namespace AlumnoEjemplos.GODMODE
             textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman",50, FontStyle.Bold | FontStyle.Italic));
             textoGameOver.Size = new Size(500, 200);
             textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
+
             textoGanador = new TgcText2d();
             textoGanador.Text = "GANASTE";
             textoGanador.Color = Color.Green;
@@ -133,8 +134,7 @@ namespace AlumnoEjemplos.GODMODE
             textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold | FontStyle.Italic));
             textoGanador.Size = new Size(500, 200);
             textoGanador.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
-
-
+            
             textoSpace = new TgcText2d();
             textoSpace.Text = "Presione Space para Volver al menu";
             textoSpace.Color = Color.White;
@@ -142,6 +142,7 @@ namespace AlumnoEjemplos.GODMODE
             textoSpace.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
             textoSpace.Position = new Point(screenSize.Width / 8, screenSize.Height / 2 + textoGameOver.Size.Height);
             #endregion
+
             tiempoBuscando = 15;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
@@ -671,7 +672,7 @@ namespace AlumnoEjemplos.GODMODE
 
         private void manejarPuerta(Puerta puerta)
          {
-             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.T)) //Sumo el vector para compensar la altura
+             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
              {
                 sonidoPuertas.play(false);
                  puerta.girando = true;
@@ -684,10 +685,8 @@ namespace AlumnoEjemplos.GODMODE
                 puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
                 objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
             }
-            
-
-
          }
+
     private void ponerEnemigo(Vector3 posicion)
         {   if (!enemigoActivo)
             {
