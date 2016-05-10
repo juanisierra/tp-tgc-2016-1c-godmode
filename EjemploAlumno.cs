@@ -386,7 +386,6 @@ namespace AlumnoEjemplos.GODMODE
                 if (!esperandoPuerta)
                 {
                     camara.updateCamera();
-
                 }
 
                 #region Deteccion del jugador
@@ -411,10 +410,10 @@ namespace AlumnoEjemplos.GODMODE
 
                     if (cantColisiones <= 2 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
+                        if (perdido) sonidoGrito.play();
                         perdido = false; //Si se ve al jugador, indicar que se lo encontro
                         enemigoActivo = true; //RARO
-                        tiempoBuscando = 15; //Volvemos a reiniciar el tiempo que nos busca si no estamos
-
+                        tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
                     }
                 }
                 #endregion
@@ -422,8 +421,6 @@ namespace AlumnoEjemplos.GODMODE
                 #endregion
 
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
-
-
 
 
                 #region Luz Linterna
@@ -504,7 +501,6 @@ namespace AlumnoEjemplos.GODMODE
 
                 esferaCamara.setRenderColor(Color.Aqua);
                 esferaCamara.render();
-
 
 
                 #region Calculos Tiempo Iluminacion
@@ -602,6 +598,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
 
                 #endregion
+
                 #region Manejo de Objetos a Buscar
                 if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
                 {
@@ -627,6 +624,7 @@ namespace AlumnoEjemplos.GODMODE
                 copa.flotar(random, elapsedTime, 30f);
                 locket.flotar(random, elapsedTime, 30f);
                 #endregion
+
                 #region Mover Enemigo
                 if (enemigoActivo)
                 {
@@ -645,11 +643,9 @@ namespace AlumnoEjemplos.GODMODE
                     enemigo.render();
                     if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
                     {
-                        sonidoEnemigo.play();
                         tiempoBuscando = 15;
                         meshEnemigo.Position = new Vector3(500, 0, 0);
                         enemigoActivo = false;
-                        sonidoEnemigo.stop();
                     }
                     if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 20f)
                     {
@@ -687,16 +683,17 @@ namespace AlumnoEjemplos.GODMODE
             }
          }
 
-    private void ponerEnemigo(Vector3 posicion)
+        private void ponerEnemigo(Vector3 posicion)
         {   if (!enemigoActivo)
             {
                 enemigo.position(posicion); //PONER ENEMIGO
                 lastKnownPos = enemigo.getPosicion();
                 enemigoActivo = true;
-                sonidoGrito.play();
+                //sonidoGrito.play(); //Opcional: grita cuando aparece, aunque no vea al jugador
             }
         }
-private void reiniciarJuego()
+
+        private void reiniciarJuego()
         {
             tiempoBuscando = 15;
             esperandoPuerta = false;
