@@ -92,6 +92,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoGameOver;
         TgcText2d textoSpace;
         TgcText2d textoGanador;
+        TgcText2d objetosAgarrados;
         #endregion
 
         string alumnoMediaFolder;
@@ -168,7 +169,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            tiempoIluminacion = 180; // 60 segundos * 3 = 3 minutos
+            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -195,9 +196,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
             //Modifiers para desplazamiento del personaje
   
-            GuiController.Instance.Modifiers.addBoolean("HabilitarGravedad", "Habilitar Gravedad", false);
-            GuiController.Instance.Modifiers.addVertex3f("Gravedad", new Vector3(-50, -50, -50), new Vector3(50, 50, 50), new Vector3(0, -10, 0));
-            GuiController.Instance.Modifiers.addFloat("SlideFactor", 1f, 200f,1.5f);
+           
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.UserVars.addVar("posicion", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
@@ -211,8 +210,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
-            // camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-            camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            //camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
            
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
@@ -281,7 +280,16 @@ namespace AlumnoEjemplos.GODMODE
             bateria.Scaling = new Vector2(0.6f, 0.6f);
             bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
+            #region ContadorDeObjetos
+            objetosAgarrados = new TgcText2d();
+           objetosAgarrados.Text = "0/4";
+            objetosAgarrados.Color = Color.White;
+            objetosAgarrados.Align = TgcText2d.TextAlign.LEFT;
+            objetosAgarrados.Size = new Size(100,100);
+            objetosAgarrados.changeFont(new System.Drawing.Font("TimesNewRoman", 40, FontStyle.Bold ));
+            objetosAgarrados.Position = new Point((int) FastMath.Max(screenSize.Width / 1.3f , 0), (int) FastMath.Max(screenSize.Height/1.2f, 0));
 
+            #endregion
             #region Puertas
             puerta1 = new Puerta(alumnoMediaFolder, new Vector3(-251f, 1f, -71f), new Vector3(5.85f, 2.15f, 1f), new Vector3(0f, -0.05f, 0f));//puerta que esta atras nuestro cuando empezamos
             puerta2 = new Puerta(alumnoMediaFolder, new Vector3(50.4f, 1f, -252f), new Vector3(5.75f, 2.15f, 1f), new Vector3(0f, -1.6f, 0f)); // a nuestra derecha
@@ -356,7 +364,7 @@ namespace AlumnoEjemplos.GODMODE
                 objetosColisionablesCambiantes.Clear();
                 todosObjetosColisionables.Clear();
                 GuiController.Instance.UserVars.setValue("perdido", perdido);
-
+               
                 #region Manejo de Puertas
                 manejarPuerta(puerta1);
                 manejarPuerta(puerta2); //Hacer foreach
@@ -467,14 +475,17 @@ namespace AlumnoEjemplos.GODMODE
                     if (lightEnable)
                     {
                         if (ObjetoIluminacion == 0)
-                        { //miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/180), temblorLuz);
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
+                        { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/100), temblorLuz);
+                           // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
                         }
                         else
                         {
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f * (tiempoIluminacion / 180), temblorLuz);
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f * (tiempoIluminacion / 100), temblorLuz);
                         }
 
+                    } else
+                    {
+                        mesh.render();
                     }
                 }
 
@@ -507,9 +518,9 @@ namespace AlumnoEjemplos.GODMODE
 
                 #endregion
 
-                esferaCamara.setRenderColor(Color.Aqua);
+               /* esferaCamara.setRenderColor(Color.Aqua);
                 esferaCamara.render();
-
+                */
 
                 #region Calculos Tiempo Iluminacion
 
@@ -524,11 +535,11 @@ namespace AlumnoEjemplos.GODMODE
                     {
                         if (!pila.usada)
                         {
-                            tiempoIluminacion = 180f;
+                            tiempoIluminacion = 100f;
                             sonidoPilas.play();
                         }
                         pila.usada = true;
-                        tiempoIluminacion = 180f;
+                        tiempoIluminacion = 100f;
 
                     }
                     pila.flotar(random, elapsedTime);
@@ -538,15 +549,15 @@ namespace AlumnoEjemplos.GODMODE
                 #endregion
 
                 #region Sprite de Bateria
-                if (tiempoIluminacion <= 30)
+                if (tiempoIluminacion <= 40)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
                 }
-                else if (tiempoIluminacion > 30 && tiempoIluminacion < 100)
+                else if (tiempoIluminacion > 40 && tiempoIluminacion < 60)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria1.png");
                 }
-                else if (tiempoIluminacion >= 100 && tiempoIluminacion <= 150)
+                else if (tiempoIluminacion >= 60 && tiempoIluminacion <= 80)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria2.png");
                 }
@@ -666,14 +677,19 @@ namespace AlumnoEjemplos.GODMODE
                     {
                         gameOver = true;
                     }
+                    
+            }
+                #region ContadorObjetos
+                int cantidadObjetos = 0;
+                if (llave.encontrado) cantidadObjetos++;
+                if (locket.encontrado) cantidadObjetos++;
+                if (espada.encontrado) cantidadObjetos++;
+                objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
+                objetosAgarrados.render();
+                #endregion
                 }
                 #endregion
-
-                if ((esferaCamara.Position.X > 1775 && esferaCamara.Position.X < 1776) && (esferaCamara.Position.Z > -23 && esferaCamara.Position.Z < -22))
-                {
-                    ganado = true;
-                }
-            }
+                
         }
 
         public override void close()
@@ -718,7 +734,7 @@ namespace AlumnoEjemplos.GODMODE
             tiempoBuscando = 15;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
-            tiempoIluminacion = 180;
+            tiempoIluminacion = 100;
             tiempo = 0;
             tiempoBuscando = 15;
             meshEnemigo.Position = new Vector3(500, 0, 0);

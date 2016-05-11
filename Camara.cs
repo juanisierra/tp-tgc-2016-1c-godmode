@@ -276,7 +276,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
             }
 
-            //Jump
+           /* //Jump
             if (GuiController.Instance.D3dInput.keyDown(Key.Space))
             {
                 Vector3 v = moveUp(JumpSpeed * elapsedTime);
@@ -291,7 +291,7 @@ namespace AlumnoEjemplos.GODMODE
                 movimiento = v;
                 moving = true;
             }
-
+            */
             if (GuiController.Instance.D3dInput.keyPressed(Key.L))
             {
                 LockCam = !LockCam;
