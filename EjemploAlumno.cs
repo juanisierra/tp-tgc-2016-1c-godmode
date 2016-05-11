@@ -653,6 +653,11 @@ namespace AlumnoEjemplos.GODMODE
                     }
                 }
                 #endregion
+
+                if ((esferaCamara.Position.X > 1775 && esferaCamara.Position.X < 1776) && (esferaCamara.Position.Z > -23 && esferaCamara.Position.Z < -22))
+                {
+                    ganado = true;
+                }
             }
         }
 
