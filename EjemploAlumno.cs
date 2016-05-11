@@ -82,7 +82,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcStaticSound sonidoPilas;
         TgcStaticSound sonidoObjeto,sonidoPuertas,sonidoGrito;
         Recarga[] recargas;
-        Objetivo copa,espada,locket;
+        Objetivo copa,espada,locket,llave;
         int iteracion = 0;
         Boolean enMenu = true;
         Boolean gameOver = false;
@@ -211,7 +211,9 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
-            camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            // camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+           
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
             camara.JumpSpeed = 30f;
@@ -305,9 +307,10 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Objetos a buscar
-            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1274f, 30f,-458f), new Vector3(0.1f, 0.1f, 0.1f));
+            copa = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\copa-TgcScene.xml", new Vector3(1782.22f, 30f,-5.51f), new Vector3(0.1f, 0.1f, 0.1f));
             espada = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\espada-TgcScene.xml", new Vector3(829f, 0f, 821f), new Vector3(0.1f, 0.1f, 0.1f));
             locket = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\locket-TgcScene.xml", new Vector3(-1447f, 30f,1023f), new Vector3(0.02f,0.02f,0.02f));
+            llave = new Objetivo(alumnoMediaFolder, "GODMODE\\Media\\llave-TgcScene.xml", new Vector3(1274f, 40f, -458f), new Vector3(0.1f, 0.1f, 0.1f));
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
             #endregion
@@ -361,11 +364,16 @@ namespace AlumnoEjemplos.GODMODE
                 manejarPuerta(puerta4);
                 manejarPuerta(puerta5);
                 manejarPuerta(puerta6);
-                if ((copa.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
+                if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
                 {
                     manejarPuerta(puerta7);
                 }
-
+                if (!puerta7.abierta) //Manejo de la ultima puerta para colisiones 
+                {
+                    puerta7.mesh.updateBoundingBox();
+                    puerta7.mesh.BoundingBox.transform(puerta7.mesh.Transform); //rota el bounding box
+                    objetosColisionablesCambiantes.Add(puerta7.mesh.BoundingBox);
+                }
 
 
                 #endregion
@@ -604,6 +612,7 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     if (copa.encontrado == false) sonidoObjeto.play(false);
                     copa.encontrado = true;
+                    ganado = true;
                 }
                 if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
                 {
@@ -620,6 +629,12 @@ namespace AlumnoEjemplos.GODMODE
                     if (locket.encontrado == false) sonidoObjeto.play(false);
                     locket.encontrado = true;
                 }
+                if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
+                {
+                    if (locket.encontrado == false) sonidoObjeto.play(false);
+                    llave.encontrado = true;
+                }
+                llave.flotar(random, elapsedTime, 40f);
                 espada.flotar(random, elapsedTime, 10f);
                 copa.flotar(random, elapsedTime, 30f);
                 locket.flotar(random, elapsedTime, 30f);
@@ -721,6 +736,7 @@ namespace AlumnoEjemplos.GODMODE
             copa.encontrado = false;
             locket.encontrado = false;
             espada.encontrado = false;
+            llave.encontrado = false;
             puerta1.abierta = false;
             puerta1.angulo = 1.605f;
             puerta2.abierta = false;
