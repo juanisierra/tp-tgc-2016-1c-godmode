@@ -160,8 +160,8 @@ namespace AlumnoEjemplos.GODMODE
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
-            instrucciones.Scaling = new Vector2(0.7f, 0.7f);
-            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height *0.7f / 2, 0));
+            instrucciones.Scaling = new Vector2(1f, 1f);
+            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width  / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height  / 2, 0));
 
 
             #endregion
