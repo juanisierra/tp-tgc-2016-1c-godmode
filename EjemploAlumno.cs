@@ -65,11 +65,12 @@ namespace AlumnoEjemplos.GODMODE
         float tiempoIluminacion;
         Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
-        TgcSprite bateria;
+        TgcSprite bateria,titulo,mancha,instrucciones;
         TgcSkeletalMesh meshEnemigo;
         Enemigo enemigo = new Enemigo();
         Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
         bool corriendo = false;
+        bool mostrarInstrucciones = false;
         TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
         bool perdido = true;
         Vector3 direccionRayo = new Vector3();
@@ -114,7 +115,7 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height/2, 0));
 
             textoDescripcion = new TgcText2d();
-            textoDescripcion.Text = "El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. presionen space para jugar";
+            textoDescripcion.Text = "El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. presiona H para ver la ayuda o space para jugar";
             textoDescripcion.Color = Color.White;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
             textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
@@ -129,7 +130,7 @@ namespace AlumnoEjemplos.GODMODE
             textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
 
             textoGanador = new TgcText2d();
-            textoGanador.Text = "GANASTE";
+            textoGanador.Text = "Felicitaciones, Ganaste";
             textoGanador.Color = Color.Green;
             textoGanador.Align = TgcText2d.TextAlign.CENTER;
             textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold | FontStyle.Italic));
@@ -142,6 +143,27 @@ namespace AlumnoEjemplos.GODMODE
             textoSpace.Align = TgcText2d.TextAlign.LEFT;
             textoSpace.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
             textoSpace.Position = new Point(screenSize.Width / 8, screenSize.Height / 2 + textoGameOver.Size.Height);
+
+            mancha = new TgcSprite();
+            mancha.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\mancha1.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            Size textureSize = mancha.Texture.Size;
+           mancha.Scaling = new Vector2(0.6f, 0.6f);
+           mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height/2 - textureSize.Height / 5f, 0));
+           titulo = new TgcSprite();
+           titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            textureSize =titulo.Texture.Size;
+            titulo.Scaling = new Vector2(0.7f,0.7f);
+            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width*0.7f / 2, 0), FastMath.Max(screenSize.Height/6  - textureSize.Height / 1.7f, 0));
+            instrucciones = new TgcSprite();
+            instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            textureSize = instrucciones.Texture.Size;
+            instrucciones.Scaling = new Vector2(0.7f, 0.7f);
+            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height *0.7f / 2, 0));
+
+
             #endregion
 
             tiempoBuscando = 15;
@@ -276,7 +298,7 @@ namespace AlumnoEjemplos.GODMODE
             bateria = new TgcSprite();
             bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
              screenSize = GuiController.Instance.Panel3d.Size;
-            Size textureSize = bateria.Texture.Size;
+            textureSize = bateria.Texture.Size;
             bateria.Scaling = new Vector2(0.6f, 0.6f);
             bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
@@ -327,16 +349,34 @@ namespace AlumnoEjemplos.GODMODE
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
-        {   if (enMenu) {
+        {   
+            if (enMenu) {
                
+                
+                GuiController.Instance.Drawer2D.beginDrawSprite();
+
+                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                titulo.render();
+                mancha.render();
+                
+                //Finalizar el dibujado de Sprites
+                GuiController.Instance.Drawer2D.endDrawSprite();
                 textoEmpezarJuego.render();
                 textoDescripcion.render();
-                if(GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
+                if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
                 {
                     enMenu = false;
                 }
             } if (gameOver)
             {
+                GuiController.Instance.Drawer2D.beginDrawSprite();
+
+                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                titulo.render();
+                mancha.render();
+
+                //Finalizar el dibujado de Sprites
+                GuiController.Instance.Drawer2D.endDrawSprite();
                 textoGameOver.render();
                 textoSpace.render();
                 if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
@@ -348,6 +388,14 @@ namespace AlumnoEjemplos.GODMODE
             }
             if (ganado)
             {
+                GuiController.Instance.Drawer2D.beginDrawSprite();
+
+                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                titulo.render();
+                
+
+                //Finalizar el dibujado de Sprites
+                GuiController.Instance.Drawer2D.endDrawSprite();
                 textoGanador.render();
                 textoSpace.render();
                 if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
@@ -592,7 +640,9 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ObjetoIluminacion = 2;
                 }
-
+               
+                    
+                    
                 /* //Capturar Input Mouse
                  if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
                  {
@@ -679,7 +729,8 @@ namespace AlumnoEjemplos.GODMODE
                     }
                     
             }
-                #region ContadorObjetos
+                #endregion
+                #region Contador Objetos
                 int cantidadObjetos = 0;
                 if (llave.encontrado) cantidadObjetos++;
                 if (locket.encontrado) cantidadObjetos++;
@@ -687,9 +738,23 @@ namespace AlumnoEjemplos.GODMODE
                 objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
                 objetosAgarrados.render();
                 #endregion
-                }
-                #endregion
+
                 
+            }
+            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.H))
+            {
+                mostrarInstrucciones = !mostrarInstrucciones;
+            }
+            if(mostrarInstrucciones)
+            {
+                GuiController.Instance.Drawer2D.beginDrawSprite();
+
+                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                instrucciones.render();
+
+                //Finalizar el dibujado de Sprites
+                GuiController.Instance.Drawer2D.endDrawSprite();
+            }
         }
 
         public override void close()
