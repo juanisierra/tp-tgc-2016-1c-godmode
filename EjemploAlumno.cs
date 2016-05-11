@@ -460,9 +460,10 @@ namespace AlumnoEjemplos.GODMODE
                     direccionRayo = camara.getPosition() - enemigo.getPosicion();
                     rayo.Origin = enemigo.getPosicion();
                     rayo.Direction = direccionRayo;
+                    Vector3 ptoIntersec;
                     foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
                     {
-                        if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out direccionRayo))
+                        if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
                             cantColisiones++;
                     }
 
