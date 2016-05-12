@@ -98,7 +98,7 @@ namespace AlumnoEjemplos.GODMODE
 
         string alumnoMediaFolder;
 
-        const int VELOCIDAD_ENEMIGO = 70;
+        const int VELOCIDAD_ENEMIGO = 80;
 
         public override void init()
         {
@@ -107,33 +107,34 @@ namespace AlumnoEjemplos.GODMODE
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
             textoEmpezarJuego = new TgcText2d();
-            textoEmpezarJuego.Text = "Iniciar Juego";
-            textoEmpezarJuego.Color = Color.Yellow;
+            textoEmpezarJuego.Text = "Presione Space para comenzar";
+            textoEmpezarJuego.Color = Color.Maroon;
             textoEmpezarJuego.Align = TgcText2d.TextAlign.CENTER;
-            textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 38, FontStyle.Bold | FontStyle.Italic));
+            textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 25, FontStyle.Bold));
             textoEmpezarJuego.Size = new Size(500, 120);
-            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height/2, 0));
+            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), (int)FastMath.Max(screenSize.Height /2 + textoEmpezarJuego.Size.Height/0.8f, 0));
 
             textoDescripcion = new TgcText2d();
-            textoDescripcion.Text = "El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. presiona H para ver la ayuda o space para jugar";
-            textoDescripcion.Color = Color.White;
+            textoDescripcion.Text = "   El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. Presiona H para ver la ayuda.";
+            textoDescripcion.changeFont(new System.Drawing.Font("TimesNewRoman", 13, FontStyle.Bold));
+            textoDescripcion.Color = Color.Gray;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
             textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
-            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height / 2);
+            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height /2 );
             
             textoGameOver = new TgcText2d();
             textoGameOver.Text = "GAME OVER";
             textoGameOver.Color = Color.Red;
             textoGameOver.Align = TgcText2d.TextAlign.CENTER;
-            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman",50, FontStyle.Bold | FontStyle.Italic));
+            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman",60, FontStyle.Bold));
             textoGameOver.Size = new Size(500, 200);
-            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
+            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height/6f, 0));
 
             textoGanador = new TgcText2d();
             textoGanador.Text = "Felicitaciones, Ganaste";
             textoGanador.Color = Color.Green;
             textoGanador.Align = TgcText2d.TextAlign.CENTER;
-            textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold | FontStyle.Italic));
+            textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold));
             textoGanador.Size = new Size(500, 200);
             textoGanador.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
             
@@ -148,14 +149,14 @@ namespace AlumnoEjemplos.GODMODE
             mancha.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\mancha1.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             Size textureSize = mancha.Texture.Size;
-           mancha.Scaling = new Vector2(0.6f, 0.6f);
-           mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height/2 - textureSize.Height / 5f, 0));
-           titulo = new TgcSprite();
-           titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
+            mancha.Scaling = new Vector2(0.6f, 0.6f);
+            mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height/2 - textureSize.Height / 4f, 0));
+            titulo = new TgcSprite();
+            titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize =titulo.Texture.Size;
             titulo.Scaling = new Vector2(0.7f,0.7f);
-            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width*0.7f / 2, 0), FastMath.Max(screenSize.Height/6  - textureSize.Height / 1.7f, 0));
+            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width*0.7f / 2, 0), FastMath.Max(screenSize.Height/3  - textureSize.Height / 2.2f, 0));
             instrucciones = new TgcSprite();
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
@@ -351,7 +352,7 @@ namespace AlumnoEjemplos.GODMODE
         public override void render(float elapsedTime)
         {   
             if (enMenu) {
-               
+
                 
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
@@ -421,9 +422,9 @@ namespace AlumnoEjemplos.GODMODE
                 manejarPuerta(puerta5);
                 manejarPuerta(puerta6);
                 if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
-                {
+               {
                     manejarPuerta(puerta7);
-                }
+               }
                 if (!puerta7.abierta) //Manejo de la ultima puerta para colisiones 
                 {
                     puerta7.mesh.updateBoundingBox();
@@ -693,7 +694,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
                 if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
                 {
-                    if (locket.encontrado == false) sonidoObjeto.play(false);
+                    if (llave.encontrado == false) sonidoObjeto.play(false);
                     llave.encontrado = true;
                 }
                 llave.flotar(random, elapsedTime, 40f);
