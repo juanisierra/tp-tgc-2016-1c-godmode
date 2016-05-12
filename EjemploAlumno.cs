@@ -805,7 +805,7 @@ namespace AlumnoEjemplos.GODMODE
             tiempo = 0;
             tiempoBuscando = 15;
             meshEnemigo.Position = new Vector3(500, 0, 0);
-            enemigoActivo = true;
+            enemigoActivo = false;
             iteracion = 0;
             perdido = true;
             lastKnownPos = enemigo.getPosicion();
@@ -821,19 +821,26 @@ namespace AlumnoEjemplos.GODMODE
             espada.encontrado = false;
             llave.encontrado = false;
             puerta1.abierta = false;
+            puerta1.girando = false;
             puerta1.angulo = 1.605f;
             puerta2.abierta = false;
             puerta2.angulo = 1.605f;
+            puerta2.girando = false;
             puerta3.abierta = false;
             puerta3.angulo = 1.605f;
+            puerta3.girando = false;
             puerta4.abierta = false;
             puerta4.angulo = 1.605f;
+            puerta4.girando = false;
             puerta5.abierta = false;
             puerta5.angulo = 1.605f;
+            puerta5.girando = false;
             puerta6.abierta = false;
             puerta6.angulo = 1.605f;
+            puerta6.girando = false;
             puerta7.abierta = false;
             puerta7.angulo = 1.605f;
+            puerta7.girando = false;
         }
 
     }
