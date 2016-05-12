@@ -115,7 +115,7 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), (int)FastMath.Max(screenSize.Height /2 + textoEmpezarJuego.Size.Height/0.8f, 0));
 
             textoDescripcion = new TgcText2d();
-            textoDescripcion.Text = "   El objetivo del juego es encontrar los tres objetos malidtos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. Presiona H para ver la ayuda.";
+            textoDescripcion.Text = "   El objetivo del juego es encontrar los tres objetos malditos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. Presiona H para ver la ayuda.";
             textoDescripcion.changeFont(new System.Drawing.Font("TimesNewRoman", 13, FontStyle.Bold));
             textoDescripcion.Color = Color.Gray;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
