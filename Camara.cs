@@ -7,9 +7,11 @@ using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using TgcViewer.Utils.Input;
 using TgcViewer;
+using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.Sound;
 
 namespace AlumnoEjemplos.GODMODE
-{
+{   
     /// <summary>
     /// Camara en primera persona personalizada para niveles de Quake 3.
     /// Evita utilizar senos y cosenos
@@ -21,7 +23,8 @@ namespace AlumnoEjemplos.GODMODE
     /// 
     public class Camara : TgcCamera
     {
-
+        public const float tiempoPaso = 0.4f;
+        SphereCollisionManager collisionManager;
         /*
          * Esta Camara es un prototipo. Esta pensada para no utilizar senos y cosenos en las rotaciones.
          * Se utiliza una camara que se desplaza sobre las caras de un cubo sin techo, ni piso. 
@@ -45,17 +48,35 @@ namespace AlumnoEjemplos.GODMODE
         private double longitud;
         public static Vector3 movimiento;
         public static bool moving;
-
+        public TgcBoundingSphere characterSphere;
+        public List<TgcBoundingBox> objetosColisionables;
+        public TgcStaticSound sonidoPisada1,sonidoPisada2;
+        public float iteracion;
+        public bool pisada;
+        public bool yaSono;
+        public void init()
+        {
+            collisionManager = new SphereCollisionManager();
+            collisionManager.GravityEnabled = false;
+            collisionManager.SlideFactor = 5.6f;
+        }
 
 
         public Camara()
         {
+            GuiController.Instance.UserVars.addVar("pisada") ;
             Control focusWindows = GuiController.Instance.D3dDevice.CreationParameters.FocusWindow;
             mouseCenter = focusWindows.PointToScreen(
                 new Point(
                     focusWindows.Width / 2,
                     focusWindows.Height / 2)
                     );
+            sonidoPisada1 = new TgcStaticSound();
+
+            sonidoPisada1.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada1corta.wav");
+            sonidoPisada2 = new TgcStaticSound();
+            sonidoPisada2.loadSound(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Sound\\pisada2corta.wav");
+
         }
 
         ~Camara()
@@ -147,14 +168,37 @@ namespace AlumnoEjemplos.GODMODE
 
         public void updateCamera()
         {
+            yaSono = false;
             float elapsedTime = GuiController.Instance.ElapsedTime;
+            iteracion += elapsedTime;
 
+           // collisionManager.SlideFactor = (float)GuiController.Instance.Modifiers["SlideFactor"];
+
+            movimiento = new Vector3(0, 0, 0);
             //Forward
             if (GuiController.Instance.D3dInput.keyDown(Key.W))
             {
                 Vector3 v = moveForward(MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+
+                if (iteracion > tiempoPaso && !yaSono)
+
+
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play();
+                       
+                      
+                    } else
+                    {
+                        sonidoPisada2.play();
+                        
+                    }
+                    pisada = !pisada;
+                    yaSono = true;
+                }
             }
 
             //Backward
@@ -163,25 +207,76 @@ namespace AlumnoEjemplos.GODMODE
                 Vector3 v = moveForward(-MovementSpeed * elapsedTime);
                 movimiento = v;
                 moving = true;
+
+                if (iteracion > tiempoPaso && !yaSono)
+
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play();
+                       
+                    }
+                    else
+                    {
+                        sonidoPisada2.play();
+                        
+                    }
+                    pisada = !pisada;
+                    yaSono = true;
+                }
             }
 
             //Strafe right
             if (GuiController.Instance.D3dInput.keyDown(Key.D))
             {
                 Vector3 v = moveSide(MovementSpeed * elapsedTime);
-                movimiento = v;
-                moving = true;
+               movimiento = v;
+               moving = true;
+
+                if (iteracion > tiempoPaso && !yaSono)
+
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play();
+                        
+                    }
+                    else
+                    {
+                        sonidoPisada2.play();
+                        
+                    }
+                    pisada = !pisada;
+                    yaSono = true;
+                }
             }
 
             //Strafe left
             if (GuiController.Instance.D3dInput.keyDown(Key.A))
             {
                 Vector3 v = moveSide(-MovementSpeed * elapsedTime);
-                movimiento = v;
+               movimiento = v;
                 moving = true;
+
+                if (iteracion > tiempoPaso && !yaSono)
+
+                {
+                    if (pisada)
+                    {
+                        sonidoPisada1.play();
+                        
+                    }
+                    else
+                    {
+                        sonidoPisada2.play();
+                        
+                    }
+                    pisada = !pisada;
+                    yaSono = true;
+                }
             }
 
-            //Jump
+           /* //Jump
             if (GuiController.Instance.D3dInput.keyDown(Key.Space))
             {
                 Vector3 v = moveUp(JumpSpeed * elapsedTime);
@@ -196,7 +291,7 @@ namespace AlumnoEjemplos.GODMODE
                 movimiento = v;
                 moving = true;
             }
-
+            */
             if (GuiController.Instance.D3dInput.keyPressed(Key.L))
             {
                 LockCam = !LockCam;
@@ -220,8 +315,14 @@ namespace AlumnoEjemplos.GODMODE
 
             updateViewMatrix(GuiController.Instance.D3dDevice);
 
+            if (iteracion > tiempoPaso)
+            {
+                iteracion = 0;
+            }
 
+            GuiController.Instance.UserVars.setValue("pisada", pisada);
         }
+       
 
         public void updateViewMatrix(Microsoft.DirectX.Direct3D.Device d3dDevice)
         {
@@ -275,15 +376,18 @@ namespace AlumnoEjemplos.GODMODE
         public Vector3 moveForward(float movimiento)
         {
             Vector3 v = ForwardDirection * movimiento;
-            move(v);
-            return v;
+            Vector3 realMovement = collisionManager.moveCharacter(characterSphere,v, objetosColisionables);
+
+            move(realMovement);
+            return realMovement;
         }
 
         public Vector3 moveSide(float movimiento)
         {
             Vector3 v = SideDirection * movimiento;
-            move(v);
-            return v;
+            Vector3 realMovement = collisionManager.moveCharacter(characterSphere, v, objetosColisionables);
+            move(realMovement);
+            return realMovement;
         }
 
         public Vector3 moveUp(float movimiento)
@@ -298,6 +402,7 @@ namespace AlumnoEjemplos.GODMODE
             //rotate(movimiento, 0.0f, 0.0f);
 
             rotate(movimiento, 0);
+           
         }
 
         public void rotateXZ(float movimiento)
