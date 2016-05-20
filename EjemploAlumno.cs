@@ -667,7 +667,7 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ponerEnemigo(new Vector3(1615f, 0f, -525f));
                 }
-
+                
                 #endregion
 
                 #region Manejo de Objetos a Buscar
