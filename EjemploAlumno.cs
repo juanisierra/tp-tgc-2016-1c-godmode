@@ -77,8 +77,8 @@ namespace AlumnoEjemplos.GODMODE
         Vector3 lastKnownPos = new Vector3();
         string animacionSeleccionada;
         float tiempoBuscando;
-        bool enemigoActivo = false;
-        bool enWaypoints = false;
+        bool enemigoActivo = true;
+        bool enWaypoints = true;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
@@ -95,12 +95,13 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoSpace;
         TgcText2d textoGanador;
         TgcText2d objetosAgarrados;
+        int contadorDetecciones = 0;
         #endregion
 
         string alumnoMediaFolder;
 
         const int VELOCIDAD_ENEMIGO = 75;
-
+        const int VELOCIDAD_PATRULLA = 50; 
         public override void init()
         {
             
@@ -208,7 +209,7 @@ namespace AlumnoEjemplos.GODMODE
             }
             meshEnemigo = enemigos.loadMeshAndAnimationsFromFile(pathMesh, mediaPath, animaciones);
             meshEnemigo.playAnimation(animacionSeleccionada, true);
-            meshEnemigo.Position = new Vector3(500, 0, 0);
+            meshEnemigo.Position = new Vector3(1, 0, 1);
             meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
             meshEnemigo.rotateY(FastMath.PI / 2);
             enemigo.setMesh(meshEnemigo);
@@ -239,8 +240,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
-             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-            //camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+           //  camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
            
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
@@ -478,20 +479,26 @@ namespace AlumnoEjemplos.GODMODE
                             cantColisiones++;
                     }
 
-                    if (cantColisiones > 1 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
                     {
                         lastKnownPos = esferaCamara.Position;
                         perdido = true;
                     }
 
-                    if (cantColisiones <= 1 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
+                    if (cantColisiones <= 2 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
-                        if (perdido) sonidoGrito.play();
-                        perdido = false; //Si se ve al jugador, indicar que se lo encontro
-                        enWaypoints = false;
-                        enemigoActivo = true; //RARO
-                        tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
+                        contadorDetecciones++;
+                        if (contadorDetecciones == 2)
+                        {
+                            if (perdido && enWaypoints) sonidoGrito.play();
+                            perdido = false; //Si se ve al jugador, indicar que se lo encontro
+                            enWaypoints = false;
+                            enemigoActivo = true; //RARO
+                            tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
+                            contadorDetecciones = 0;
+                        }
                     }
+                    
                 }
                 #endregion
 
@@ -719,8 +726,10 @@ namespace AlumnoEjemplos.GODMODE
                 if (enemigoActivo)
                 {
                     sonidoEnemigo.play();
-                    if (!perdido)
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f && !perdido )
+                    {
                         enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
+                    }
                     else
                     {
                         if (!enWaypoints)
@@ -728,28 +737,30 @@ namespace AlumnoEjemplos.GODMODE
                             enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
                             tiempoBuscando -= elapsedTime;
                             lastKnownPos.Y = 0;
-                            if (Math.Abs(Vector3.Length(enemigo.getPosicion() - lastKnownPos)) <2f)
-                                enWaypoints = true;
                         }
-                        else
-                            enemigo.seguirWaypoints(VELOCIDAD_ENEMIGO * elapsedTime);
+                        else {
+                            enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
+                        }
                     }
-                    /*Ocultar enemigo
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) > 700f || tiempoBuscando <= 0)
+                    //Ocultar enemigo
+                    if (!enWaypoints &&tiempoBuscando <= 0)
                     {
                         tiempoBuscando = 15;
-                        enemigoActivo = false;
+                        perdido = true;
+                        enWaypoints = true;
+                        enemigo.moverAUltimoWaypoint();
                     }
-                    */
+                    
                     //GAME OVER
-                    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
                     {
                         gameOver = true;
                     }
-
+                    */
                     enemigo.actualizarAnim();
                     enemigo.render();
                 }
+                
                 #endregion
 
                 #region Contador Objetos
@@ -818,6 +829,7 @@ namespace AlumnoEjemplos.GODMODE
 
         private void reiniciarJuego()
         {
+            contadorDetecciones = 0;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
             tiempoIluminacion = 100;

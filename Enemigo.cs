@@ -80,5 +80,9 @@ namespace AlumnoEjemplos.GODMODE
             }
             this.perseguir(waypointObjetivo, velocidad);
         }
+       public void moverAUltimoWaypoint()
+        {
+            this.mover(waypointObjetivo);
+       }
     }
 }
