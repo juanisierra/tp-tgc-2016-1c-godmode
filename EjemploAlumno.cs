@@ -484,8 +484,6 @@ namespace AlumnoEjemplos.GODMODE
                         perdido = true;
                     }
 
-                    if (cantColisiones == 0)
-                        ;
                     if (cantColisiones <= 1 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
                         if (perdido) sonidoGrito.play();
@@ -681,7 +679,7 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ponerEnemigo(new Vector3(1615f, 0f, -525f));
                 }
-                */
+                */               
                 #endregion
 
                 #region Manejo de Objetos a Buscar
