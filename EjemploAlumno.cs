@@ -469,8 +469,11 @@ namespace AlumnoEjemplos.GODMODE
                 if (enemigoActivo)
                 {
                     int cantColisiones = 0;
+                    Vector3 origenRayo = enemigo.getPosicion();
+                    origenRayo.Y = 20;
                     direccionRayo = camara.getPosition() - enemigo.getPosicion();
-                    rayo.Origin = enemigo.getPosicion();
+                    direccionRayo.Y = 0;
+                    rayo.Origin = origenRayo;
                     rayo.Direction = direccionRayo;
                     Vector3 ptoIntersec;
                     foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
@@ -479,13 +482,14 @@ namespace AlumnoEjemplos.GODMODE
                             cantColisiones++;
                     }
 
-                    if (cantColisiones > 2 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    if (cantColisiones > 0 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
                     {
                         lastKnownPos = esferaCamara.Position;
                         perdido = true;
+                        contadorDetecciones = 0;
                     }
 
-                    if (cantColisiones <= 2 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
+                    if (cantColisiones == 0 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
                         contadorDetecciones++;
                         if (contadorDetecciones == 2)
@@ -743,7 +747,7 @@ namespace AlumnoEjemplos.GODMODE
                         }
                     }
                     //Ocultar enemigo
-                    if (!enWaypoints &&tiempoBuscando <= 0)
+                    if (!enWaypoints && tiempoBuscando <= 0)
                     {
                         tiempoBuscando = 15;
                         perdido = true;
