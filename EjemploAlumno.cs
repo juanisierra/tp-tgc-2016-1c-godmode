@@ -53,6 +53,7 @@ namespace AlumnoEjemplos.GODMODE
         List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
         List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
         List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
+        List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
@@ -383,7 +384,8 @@ namespace AlumnoEjemplos.GODMODE
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
-        {   
+        {
+            #region enMenu
             if (enMenu) {
 
                 
@@ -401,7 +403,10 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     enMenu = false;
                 }
-            } if (gameOver)
+            }
+            #endregion
+            #region Gameover 
+            if (gameOver)
             {
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
@@ -420,6 +425,9 @@ namespace AlumnoEjemplos.GODMODE
                     reiniciarJuego();
                 }
             }
+            #endregion
+            #region ganado
+
             if (ganado)
             {
                 GuiController.Instance.Drawer2D.beginDrawSprite();
@@ -440,6 +448,7 @@ namespace AlumnoEjemplos.GODMODE
                     reiniciarJuego();
                 }
             }
+            #endregion
 
             else if (!enMenu && !gameOver && !ganado) {
                 iteracion++;
@@ -470,7 +479,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
 
 
-                #endregion
+#endregion
 
                 //Device de DirectX para renderizar
                 Device d3dDevice = GuiController.Instance.D3dDevice;
@@ -478,89 +487,83 @@ namespace AlumnoEjemplos.GODMODE
 
                 #region Camara, Colisiones y Deteccion
 
-                todosObjetosColisionables.AddRange(objetosColisionables);
-                todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
-                camara.objetosColisionables = todosObjetosColisionables;
-                camara.characterSphere = esferaCamara;
-                if (!esperandoPuerta && !enLocker)
-                {
-                    camara.updateCamera();
-                }
+                                    todosObjetosColisionables.AddRange(objetosColisionables);
+                                    todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
+                                    camara.objetosColisionables = todosObjetosColisionables;
+                                    camara.characterSphere = esferaCamara;
+                                    if (!esperandoPuerta && !enLocker)
+                                    {
+                                        camara.updateCamera();
+                                    }
 
-                #region Deteccion del jugador
+           
 
-                if (enemigoActivo)
-                {
-                    int cantColisiones = 0;
-                    Vector3 origenRayo = enemigo.getPosicion();
-                    origenRayo.Y = 20;
-                    direccionRayo = camara.getPosition() - enemigo.getPosicion();
-                    direccionRayo.Y = 0;
-                    rayo.Origin = origenRayo;
-                    rayo.Direction = direccionRayo;
-                    Vector3 ptoIntersec;
-                    foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
-                    {
-                        if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
-                        {
-                            cantColisiones++;
-                            break;
-                        }
-                            
-                    }
+                    #endregion
+                 #region Deteccion del jugador
 
-                    if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
-                    {
-                        lastKnownPos = esferaCamara.Position;
-                        perdido = true;
-                        contadorDetecciones = 0;
-                    }
+                                    if (enemigoActivo)
+                                    {
+                                        int cantColisiones = 0;
+                                        Vector3 origenRayo = enemigo.getPosicion();
+                                        origenRayo.Y = 20;
+                                        direccionRayo = camara.getPosition() - enemigo.getPosicion();
+                                        direccionRayo.Y = 0;
+                                        rayo.Origin = origenRayo;
+                                        rayo.Direction = direccionRayo;
+                                        Vector3 ptoIntersec;
+                                        foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
+                                        {
+                                            if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
+                                            {
+                                                cantColisiones++;
+                                                break;
+                                            }
+                                        }
 
-                    if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
-                    {
-                        contadorDetecciones++;
-                        if (contadorDetecciones == 2)
-                        {
-                            if (perdido && enWaypoints) sonidoGrito.play();
-                            perdido = false; //Si se ve al jugador, indicar que se lo encontro
-                            enWaypoints = false;
-                            enemigoActivo = true; //RARO
-                            tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
-                            contadorDetecciones = 0;
-                        }
-                    }
+                                        if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                                        {
+                                            lastKnownPos = esferaCamara.Position;
+                                            perdido = true;
+                                            contadorDetecciones = 0;
+                                        }
+
+                                        if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
+                                        {
+                                            contadorDetecciones++;
+                                            if (contadorDetecciones == 2)
+                                            {
+                                                if (perdido && enWaypoints) sonidoGrito.play();
+                                                perdido = false; //Si se ve al jugador, indicar que se lo encontro
+                                                enWaypoints = false;
+                                                enemigoActivo = true; //RARO
+                                                tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
+                                                contadorDetecciones = 0;
+                                            }
+                                        }
                     
-                }
-                #endregion
-
-                #endregion
-
+                                    }
+                    #endregion
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
-                
+                #region lockers
                 manejarLocker(locker1);
+                #endregion
+
                 #region Luz Linterna
-                List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
+                todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
+                tgcScene.setMeshesEnabled(false);
                 todosLosMeshesIluminables.AddRange(meshesExtra);
+                foreach(TgcMesh mesh in meshesExtra)
+                {
+                    mesh.Enabled = false;
+                }
                 foreach(Locker locker in listaLockers)
                 {
                     todosLosMeshesIluminables.Add(locker.mesh);
+                    locker.mesh.Enabled = false;
                 }
                 bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
-                if (lightEnable)
-                {
-                    foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                    {
-                        miLuz.prenderLuz(ObjetoIluminacion, mesh);
-                    }
-                }
-                else
-                {
-                    foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                    {
-                        miLuz.apagarLuz(mesh);
-                    }
-                }
+          
 
                 //Actualzar posición de la luz
 
@@ -623,13 +626,13 @@ namespace AlumnoEjemplos.GODMODE
 
                 GuiController.Instance.D3dDevice.Transform.View = matrizView;
 
-                #endregion
+#endregion
 
                /* esferaCamara.setRenderColor(Color.Aqua);
                 esferaCamara.render();
                 */
 
-                #region Calculos Tiempo Iluminacion
+#region Calculos Tiempo Iluminacion
 
                 tiempoIluminacion -= elapsedTime;
                 if (tiempoIluminacion <= 15)
@@ -653,8 +656,8 @@ namespace AlumnoEjemplos.GODMODE
                     GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
                     GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
                 }
-                #endregion
-                #region Sprite locker
+#endregion
+#region Sprite locker
                 if (enLocker)
                 {
                      //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
@@ -666,8 +669,8 @@ namespace AlumnoEjemplos.GODMODE
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
                 }
-                #endregion
-                #region Sprite de Bateria
+#endregion
+#region Sprite de Bateria
                 if (tiempoIluminacion <= 40)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
@@ -692,9 +695,9 @@ namespace AlumnoEjemplos.GODMODE
 
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
-                #endregion
+#endregion
 
-                #region Ejemplo de input teclado
+#region Ejemplo de input teclado
                 ///////////////INPUT//////////////////
 
 
@@ -721,10 +724,10 @@ namespace AlumnoEjemplos.GODMODE
                  }*/
 
 
-                #endregion
+#endregion
 
                 //REGION COMENTADA
-                #region Aparecer enemigo
+#region Aparecer enemigo
                 /* Aparicion aleatoria de enemigo           
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1288,50,372))) < 400f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
                 {
@@ -739,9 +742,9 @@ namespace AlumnoEjemplos.GODMODE
                     ponerEnemigo(new Vector3(1615f, 0f, -525f));
                 }
                 */               
-                #endregion
+#endregion
 
-                #region Manejo de Objetos a Buscar
+#region Manejo de Objetos a Buscar
                 if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
                 {
                     if (!copa.encontrado) sonidoObjeto.play(false);
@@ -772,9 +775,9 @@ namespace AlumnoEjemplos.GODMODE
                 espada.flotar(random, elapsedTime, 10f);
                 copa.flotar(random, elapsedTime, 30f);
                 locket.flotar(random, elapsedTime, 30f);
-                #endregion
+#endregion
 
-                #region Mover Enemigo
+#region Mover Enemigo
                 if (enemigoActivo)
                 {
                     sonidoEnemigo.play();
@@ -813,16 +816,16 @@ namespace AlumnoEjemplos.GODMODE
                     enemigo.render();
                 }
                 
-                #endregion
+#endregion
 
-                #region Contador Objetos
+#region Contador Objetos
                 int cantidadObjetos = 0;
                 if (llave.encontrado) cantidadObjetos++;
                 if (locket.encontrado) cantidadObjetos++;
                 if (espada.encontrado) cantidadObjetos++;
                 objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
                 objetosAgarrados.render();
-                #endregion
+#endregion
                 
                 
             }
@@ -911,8 +914,10 @@ namespace AlumnoEjemplos.GODMODE
 
                 if (hayQueRenderizarlo(m.BoundingBox))
                 {
+                    m.Enabled = true;
                     if (lightEnable)
                     {
+                        miLuz.prenderLuz(ObjetoIluminacion, m);
                         if (ObjetoIluminacion == 0)
                         {
                             miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
@@ -922,13 +927,15 @@ namespace AlumnoEjemplos.GODMODE
                         {
                             miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
                         }
-
+                        
                     }
                     else
                     {
+                        miLuz.apagarLuz(m);
                         m.render();
                     }
                     cantRenderizados++;
+                    m.Enabled = false;
                 }
             }
             return cantRenderizados;
@@ -954,11 +961,11 @@ namespace AlumnoEjemplos.GODMODE
             lastKnownPos = enemigo.getPosicion();
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
             esferaCamara.setCenter(camara.getPosition());
-            #region Inicializacion del rayo
+#region Inicializacion del rayo
             direccionRayo = camara.getPosition() - enemigo.getPosicion();
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
-            #endregion
+#endregion
             copa.encontrado = false;
             locket.encontrado = false;
             espada.encontrado = false;
