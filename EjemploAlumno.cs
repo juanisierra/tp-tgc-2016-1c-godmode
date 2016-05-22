@@ -254,6 +254,7 @@ namespace AlumnoEjemplos.GODMODE
             camara.JumpSpeed = 30f;
             camara.init();
             #endregion
+
             #region Lockers
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
@@ -268,6 +269,7 @@ namespace AlumnoEjemplos.GODMODE
             locker1.lookAt = new Vector3(-139.8736f, 50, -168.1381f);
             listaLockers.Add(locker1);
             #endregion
+
             #region Control de Colisiones
 
             objetosColisionables.Clear(); 
@@ -378,11 +380,10 @@ namespace AlumnoEjemplos.GODMODE
             espada.mesh.rotateZ(1f);
             #endregion
 
-            
         }
 
-
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
+
         public override void render(float elapsedTime)
         {
             #region enMenu
@@ -546,6 +547,7 @@ namespace AlumnoEjemplos.GODMODE
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
                 #region lockers
                 manejarLocker(locker1);
+
                 #endregion
 
                 #region Luz Linterna
@@ -611,15 +613,15 @@ namespace AlumnoEjemplos.GODMODE
 
                 var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
                 GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
-                if (ObjetoIluminacion == 0)
+                if (ObjetoIluminacion == 0 && !enLocker)
                 {
                     meshLinterna.render();
                 }
-                else if (ObjetoIluminacion == 1)
+                else if (ObjetoIluminacion == 1 && !enLocker)
                 {
                     meshFarol.render();
                 }
-                else if (ObjetoIluminacion == 2)
+                else if (ObjetoIluminacion == 2 && !enLocker) 
                 {
                     meshVela.render();
                 }

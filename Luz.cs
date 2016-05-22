@@ -68,33 +68,33 @@ namespace AlumnoEjemplos.GODMODE
             }
             else if (tipo == 1)
             {
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.FromArgb(255,232,136)));
+                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.Yellow));
                 mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("lightIntensity", intensidad);
+                mesh.Effect.SetValue("lightIntensity", intensidad*2);
                 mesh.Effect.SetValue("lightAttenuation", 0.67f);
 
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
-                mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.FromArgb(255, 214,121)));
-                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.FromArgb(254,226,141)));
-                mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor(Color.FromArgb(254,220,141)));
-                mesh.Effect.SetValue("materialSpecularExp",23f);
+                mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.Yellow));
+                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.Yellow));
+                mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor(Color.Yellow));
+                mesh.Effect.SetValue("materialSpecularExp",33f);
                 mesh.render();
             }
             else if (tipo==2)
             {
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.FromArgb(255, 232, 136)));
+                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.LightGoldenrodYellow));//PeachPuff  Orange
                 mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("lightIntensity", intensidad+random*2);
+                mesh.Effect.SetValue("lightIntensity", intensidad+random*3);
                 mesh.Effect.SetValue("lightAttenuation", 0.67f);
 
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
-                mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.FromArgb(255, 214, 121)));
-                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.FromArgb(254, 226, 141)));
-                mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor(Color.FromArgb(254, 220, 141)));
+                mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.White));
+                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.White));
+                mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor(Color.Orange));
                 mesh.Effect.SetValue("materialSpecularExp", 23f);
                 mesh.render();
             }
