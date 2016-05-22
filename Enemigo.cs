@@ -14,12 +14,13 @@ namespace AlumnoEjemplos.GODMODE
 {
     class Enemigo
     {
-        private const int CANT_WAYPOINTS = 8;
+        private const int CANT_WAYPOINTS = 1;
         public TgcSkeletalMesh cuerpo;
-        static Vector3[] waypoints = new Vector3[]
+       /* static Vector3[] waypoints = new Vector3[]
               {new Vector3(1f, 0f,1f), new Vector3(795.7219f,0f, 9.3205f), new Vector3(815.5751f, 0f, 766.1295f),
                new Vector3(28.48632f, 0f, 817.5837f), new Vector3(-802.072f, 0f, 765.6752f), new Vector3(-804.0176f, 0f, -23.41319f),
-               new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f)};
+               new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f)};*/
+        static Vector3[] waypoints = new Vector3[] { new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f) };
         Vector3 waypointObjetivo = waypoints[0];
         int indiceActual = -1;
         int paso = 1;

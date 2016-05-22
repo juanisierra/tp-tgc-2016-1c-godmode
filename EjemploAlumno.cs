@@ -65,7 +65,7 @@ namespace AlumnoEjemplos.GODMODE
         float tiempoIluminacion;
         Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
-        TgcSprite bateria, titulo, mancha, instrucciones;
+        TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
         TgcSkeletalMesh meshEnemigo;
         Enemigo enemigo = new Enemigo();
         Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
@@ -79,6 +79,7 @@ namespace AlumnoEjemplos.GODMODE
         float tiempoBuscando;
         bool enemigoActivo = true;
         bool enWaypoints = true;
+        bool enLocker = false;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
@@ -96,6 +97,8 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoGanador;
         TgcText2d objetosAgarrados;
         int contadorDetecciones = 0;
+        List<Locker> listaLockers;
+        Locker locker1;
         #endregion
 
         string alumnoMediaFolder;
@@ -173,7 +176,7 @@ namespace AlumnoEjemplos.GODMODE
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
-            GuiController.Instance.UserVars.addVar("a", 0);
+            GuiController.Instance.UserVars.addVar("enLocker");
             //Device de DirectX para crear primitivas
             Device d3dDevice = GuiController.Instance.D3dDevice;
             ObjetoIluminacion = 0;
@@ -209,7 +212,7 @@ namespace AlumnoEjemplos.GODMODE
             }
             meshEnemigo = enemigos.loadMeshAndAnimationsFromFile(pathMesh, mediaPath, animaciones);
             meshEnemigo.playAnimation(animacionSeleccionada, true);
-            meshEnemigo.Position = new Vector3(1, 0, 1);
+            meshEnemigo.Position = new Vector3(-1503.234f, 0f, -20.93158f);
             meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
             meshEnemigo.rotateY(FastMath.PI / 2);
             enemigo.setMesh(meshEnemigo);
@@ -219,15 +222,16 @@ namespace AlumnoEjemplos.GODMODE
             #region Modifiers
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
+            GuiController.Instance.Modifiers.addVertex3f("posVista", new Vector3(-20f, 49f, -20f), new Vector3(20f, 51f, 20f), new Vector3(0, 50, 0));
             //Modifiers para desplazamiento del personaje
-
+            GuiController.Instance.UserVars.addVar("posicion");
+            GuiController.Instance.UserVars.addVar("lookAt");
             GuiController.Instance.UserVars.addVar("PosEnemigo", 0);
             GuiController.Instance.UserVars.addVar("lastKnown", 0);
             GuiController.Instance.UserVars.addVar("enWaypoints", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            GuiController.Instance.UserVars.addVar("posicion", 0);
+            
             GuiController.Instance.UserVars.addVar("poder", 0);
-
 
 
             /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-151f, 1f, 549.04f), new Vector3(-11f, 1f, 749.04f), new Vector3(-51f, 1f, 649.04f));
@@ -240,15 +244,28 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
-           //  camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-            camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+            camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+           // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
            
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
             camara.JumpSpeed = 30f;
             camara.init();
             #endregion
+            #region Lockers
+            spriteLocker = new TgcSprite();
+            spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            textureSize = spriteLocker.Texture.Size;
+            spriteLocker.Scaling = new Vector2(1,1);
+            spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), -150);
 
+            listaLockers = new List<Locker>();
+            locker1 = new Locker(alumnoMediaFolder, new Vector3(-152.824f, 0, -210.2993f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker1.posVista = new Vector3(-139.8626f, 50f, -168.6381f);
+            locker1.lookAt = new Vector3(-139.8736f, 50, -168.1381f);
+            listaLockers.Add(locker1);
+            #endregion
             #region Control de Colisiones
 
             objetosColisionables.Clear(); 
@@ -256,6 +273,10 @@ namespace AlumnoEjemplos.GODMODE
                         {
                             objetosColisionables.Add(mesh.BoundingBox);
                         }
+                        foreach(Locker locker in listaLockers)
+                          {
+                         objetosColisionables.Add(locker.mesh.BoundingBox);
+                         }
 
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
@@ -354,6 +375,8 @@ namespace AlumnoEjemplos.GODMODE
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
             #endregion
+
+            
         }
 
 
@@ -425,7 +448,8 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.UserVars.setValue("PosEnemigo", enemigo.getPosicion());
                 GuiController.Instance.UserVars.setValue("lastKnown", lastKnownPos);
                 GuiController.Instance.UserVars.setValue("enWaypoints", enWaypoints);
-
+                GuiController.Instance.UserVars.setValue("enLocker", enLocker);
+                GuiController.Instance.UserVars.setValue("lookAt", camara.getLookAt());
                 #region Manejo de Puertas
                 manejarPuerta(puerta1);
                 manejarPuerta(puerta2); //Hacer foreach
@@ -449,8 +473,6 @@ namespace AlumnoEjemplos.GODMODE
 
                 //Device de DirectX para renderizar
                 Device d3dDevice = GuiController.Instance.D3dDevice;
-
-                GuiController.Instance.UserVars.setValue("a", tiempo);
                 //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
 
                 #region Camara, Colisiones y Deteccion
@@ -459,7 +481,7 @@ namespace AlumnoEjemplos.GODMODE
                 todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
                 camara.objetosColisionables = todosObjetosColisionables;
                 camara.characterSphere = esferaCamara;
-                if (!esperandoPuerta)
+                if (!esperandoPuerta && !enLocker)
                 {
                     camara.updateCamera();
                 }
@@ -509,11 +531,16 @@ namespace AlumnoEjemplos.GODMODE
                 #endregion
 
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
-
+                
+                manejarLocker(locker1);
                 #region Luz Linterna
                 List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
                 todosLosMeshesIluminables.AddRange(meshesExtra);
+                foreach(Locker locker in listaLockers)
+                {
+                    todosLosMeshesIluminables.Add(locker.mesh);
+                }
                 bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
                 if (lightEnable)
                 {
@@ -614,11 +641,23 @@ namespace AlumnoEjemplos.GODMODE
 
                     }
                     pila.flotar(random, elapsedTime);
-                    GuiController.Instance.UserVars.setValue("posicion", esferaCamara.Center);
+                    GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
                     GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
                 }
                 #endregion
+                #region Sprite locker
+                if (enLocker)
+                {
+                     //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
+                GuiController.Instance.Drawer2D.beginDrawSprite();
 
+                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                spriteLocker.render();
+
+                //Finalizar el dibujado de Sprites
+                GuiController.Instance.Drawer2D.endDrawSprite();
+                }
+                #endregion
                 #region Sprite de Bateria
                 if (tiempoIluminacion <= 40)
                 {
@@ -775,7 +814,7 @@ namespace AlumnoEjemplos.GODMODE
                 objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
                 objetosAgarrados.render();
                 #endregion
-
+                
                 
             }
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.H))
@@ -820,6 +859,29 @@ namespace AlumnoEjemplos.GODMODE
                 objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
             }
          }
+        private void manejarLocker(Locker locker)
+        {
+            if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F)) //Sumo el vector para compensar la altura
+            {
+                enLocker = true;
+                locker.adentro = true;
+                locker.posAnterior = camara.getPosition();
+                locker.lookAtAnterior = camara.getLookAt();
+                camara.setCamera(locker.posVista,locker.lookAt);
+                camara.updateCamera();
+                esferaCamara.setCenter(camara.getPosition());
+            }
+            else {
+                if (locker.adentro && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F))
+                {
+                    enLocker = false;
+                    locker.adentro = false;
+                    camara.setCamera(locker.posAnterior, locker.lookAtAnterior);
+                    camara.updateCamera();
+                    esferaCamara.setCenter(camara.getPosition());
+                }
+            }
+        }
 
         private void ponerEnemigo(Vector3 posicion)
         {   if (!enemigoActivo)
