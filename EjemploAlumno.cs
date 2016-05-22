@@ -222,6 +222,7 @@ namespace AlumnoEjemplos.GODMODE
             #region Modifiers
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
+            GuiController.Instance.Modifiers.addBoolean("optimizar", "optimizar", true);
             GuiController.Instance.Modifiers.addVertex3f("posVista", new Vector3(-20f, 49f, -20f), new Vector3(20f, 51f, 20f), new Vector3(0, 50, 0));
             //Modifiers para desplazamiento del personaje
             GuiController.Instance.UserVars.addVar("posicion");
@@ -566,31 +567,35 @@ namespace AlumnoEjemplos.GODMODE
 
                 Vector3 lightDir = camara.target - camara.eye;
                 lightDir.Normalize();
-
-                //Renderizar meshes
-                foreach (TgcMesh mesh in todosLosMeshesIluminables)
+                if ((bool)GuiController.Instance.Modifiers["optimizar"])
                 {
-                    if (lightEnable)
+                    renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
+                } else
+                {   foreach (TgcMesh m in todosLosMeshesIluminables)
                     {
-                        if (ObjetoIluminacion == 0)
-                        { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/100), temblorLuz);
-                           // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
+                        if (lightEnable)
+                        {
+                            if (ObjetoIluminacion == 0)
+                            {
+                                miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
+                                // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
+                            }
+                            else
+                            {
+                                miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
+                            }
+
                         }
                         else
                         {
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f * (tiempoIluminacion / 100), temblorLuz);
+                            m.render();
                         }
-
-                    } else
-                    {
-                        mesh.render();
                     }
                 }
 
+                       //Renderizar mesh de luz
 
-                //Renderizar mesh de luz
-
-                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+        temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
                 var random = FastMath.Cos(6 * temblorLuz);
                 var random2 = FastMath.Cos(12 * temblorLuz);
                 meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
@@ -891,6 +896,43 @@ namespace AlumnoEjemplos.GODMODE
                 enemigoActivo = true;
                 //sonidoGrito.play(); //Opcional: grita cuando aparece, aunque no vea al jugador
             }
+        }
+        private int renderizarMeshes(List<TgcMesh> meshes, bool lightEnable, Vector3 lightPos, Vector3 lightDir)
+        {
+            int cantRenderizados = 0;
+            foreach (TgcMesh m in meshes)
+            {
+
+                //Solo mostrar la malla si colisiona contra el Frustum
+
+                if (hayQueRenderizarlo(m.BoundingBox))
+                {
+                    if (lightEnable)
+                    {
+                        if (ObjetoIluminacion == 0)
+                        {
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
+                            // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
+                        }
+                        else
+                        {
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
+                        }
+
+                    }
+                    else
+                    {
+                        m.render();
+                    }
+                    cantRenderizados++;
+                }
+            }
+            return cantRenderizados;
+        }
+        static public bool hayQueRenderizarlo(TgcBoundingBox objeto)
+        {
+            TgcCollisionUtils.FrustumResult r = TgcCollisionUtils.classifyFrustumAABB(GuiController.Instance.Frustum, objeto);
+            return (r != TgcCollisionUtils.FrustumResult.OUTSIDE);
         }
 
         private void reiniciarJuego()
