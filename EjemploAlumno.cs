@@ -553,16 +553,16 @@ namespace AlumnoEjemplos.GODMODE
                 #region Luz Linterna
                 todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
-                tgcScene.setMeshesEnabled(false);
+                //tgcScene.setMeshesEnabled(false);
                 todosLosMeshesIluminables.AddRange(meshesExtra);
-                foreach(TgcMesh mesh in meshesExtra)
+               /* foreach(TgcMesh mesh in meshesExtra)
                 {
                     mesh.Enabled = false;
-                }
+                }*/
                 foreach(Locker locker in listaLockers)
                 {
                     todosLosMeshesIluminables.Add(locker.mesh);
-                    locker.mesh.Enabled = false;
+                   // locker.mesh.Enabled = false;
                 }
                 bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
           
@@ -582,10 +582,13 @@ namespace AlumnoEjemplos.GODMODE
                 } else
                 {   foreach (TgcMesh m in todosLosMeshesIluminables)
                     {
+                        //m.Enabled = true;
                         if (lightEnable)
                         {
+                            miLuz.prenderLuz(ObjetoIluminacion, m);
                             if (ObjetoIluminacion == 0)
                             {
+                                
                                 miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
                                 // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
                             }
@@ -597,6 +600,7 @@ namespace AlumnoEjemplos.GODMODE
                         }
                         else
                         {
+                            miLuz.apagarLuz(m);
                             m.render();
                         }
                     }
@@ -916,7 +920,7 @@ namespace AlumnoEjemplos.GODMODE
 
                 if (hayQueRenderizarlo(m.BoundingBox))
                 {
-                    m.Enabled = true;
+                   // m.Enabled = true;
                     if (lightEnable)
                     {
                         miLuz.prenderLuz(ObjetoIluminacion, m);
@@ -937,7 +941,7 @@ namespace AlumnoEjemplos.GODMODE
                         m.render();
                     }
                     cantRenderizados++;
-                    m.Enabled = false;
+                    //m.Enabled = false;
                 }
             }
             return cantRenderizados;
