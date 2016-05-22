@@ -804,7 +804,7 @@ namespace AlumnoEjemplos.GODMODE
                     }
                     
                     //GAME OVER
-                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f) && !enLocker)
+                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
                     {
                         gameOver = true;
                     }
@@ -870,7 +870,7 @@ namespace AlumnoEjemplos.GODMODE
          }
         private void manejarLocker(Locker locker)
         {
-            if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F)) //Sumo el vector para compensar la altura
+            if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F) && perdido) //Sumo el vector para compensar la altura
             {
                 enLocker = true;
                 locker.adentro = true;
