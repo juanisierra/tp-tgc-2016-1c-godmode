@@ -233,7 +233,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("perdido", perdido);
             
             GuiController.Instance.UserVars.addVar("poder", 0);
-
+            
 
             /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-151f, 1f, 549.04f), new Vector3(-11f, 1f, 749.04f), new Vector3(-51f, 1f, 649.04f));
              GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.1f, 2.15f, 1f));*/
@@ -502,17 +502,21 @@ namespace AlumnoEjemplos.GODMODE
                     foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
                     {
                         if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
+                        {
                             cantColisiones++;
+                            break;
+                        }
+                            
                     }
 
-                    if (cantColisiones > 0 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
                     {
                         lastKnownPos = esferaCamara.Position;
                         perdido = true;
                         contadorDetecciones = 0;
                     }
 
-                    if (cantColisiones == 0 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
+                    if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
                         contadorDetecciones++;
                         if (contadorDetecciones == 2)
@@ -774,7 +778,7 @@ namespace AlumnoEjemplos.GODMODE
                 if (enemigoActivo)
                 {
                     sonidoEnemigo.play();
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f && !perdido )
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 1000f && !perdido && !enLocker)
                     {
                         enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
                     }
@@ -800,7 +804,7 @@ namespace AlumnoEjemplos.GODMODE
                     }
                     
                     //GAME OVER
-                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f) && !enLocker)
                     {
                         gameOver = true;
                     }
