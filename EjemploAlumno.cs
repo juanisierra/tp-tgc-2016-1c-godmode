@@ -99,7 +99,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d objetosAgarrados;
         int contadorDetecciones = 0;
         List<Locker> listaLockers;
-        Locker locker1;
+        Locker locker1, locker2, locker3;
         #endregion
 
         string alumnoMediaFolder;
@@ -264,10 +264,21 @@ namespace AlumnoEjemplos.GODMODE
             spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), -150);
 
             listaLockers = new List<Locker>();
-            locker1 = new Locker(alumnoMediaFolder, new Vector3(-152.824f, 0, -210.2993f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker1.posVista = new Vector3(-139.8626f, 50f, -168.6381f);
-            locker1.lookAt = new Vector3(-139.8736f, 50, -168.1381f);
+            locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -250f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker1.posVista = new Vector3(-240f, 0, -255f);
+            locker1.lookAt = new Vector3(-230f, 2, -305f);
             listaLockers.Add(locker1);
+
+            locker2 = new Locker(alumnoMediaFolder, new Vector3(800f, 0, -900f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker2.posVista = new Vector3(820f, 0, -847.684f);
+            locker2.lookAt = new Vector3(840f, 2, -820.684f);
+            listaLockers.Add(locker2);
+
+            locker3 = new Locker(alumnoMediaFolder, new Vector3(-1170.824f, 0, 940f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker3.posVista = new Vector3(-1192.824f, 0, 1050f);
+            locker3.lookAt = new Vector3(-1192.824f, 0, 980f);
+            listaLockers.Add(locker3);
+
             #endregion
 
             #region Control de Colisiones
@@ -545,8 +556,10 @@ namespace AlumnoEjemplos.GODMODE
                                     }
                     #endregion
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
-                #region lockers
+                #region manejo de lockers
                 manejarLocker(locker1);
+                manejarLocker(locker2);
+                manejarLocker(locker3);
 
                 #endregion
 
