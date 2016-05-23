@@ -256,13 +256,14 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Lockers
+            GuiController.Instance.Modifiers.addVertex2f("posicionS", new Vector2(-1000, -1000), new Vector2(1000, 1000), new Vector2(0, 0));
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = spriteLocker.Texture.Size;
             spriteLocker.Scaling = new Vector2(1,1);
-            spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), -150);
-
+            //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
+            spriteLocker.Position = new Vector2(-screenSize.Width /2.2f, -screenSize.Height / 3f);
             listaLockers = new List<Locker>();
             locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -240f), new Vector3(0.4f, 0.17f, 0.4f));
             locker1.posVista = new Vector3(-225.6352f, 50f, -197.2892f);
@@ -397,6 +398,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void render(float elapsedTime)
         {
+           
             #region enMenu
             if (enMenu) {
 
@@ -501,6 +503,10 @@ namespace AlumnoEjemplos.GODMODE
 
                                     todosObjetosColisionables.AddRange(objetosColisionables);
                                     todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
+                                    foreach(Locker locker in listaLockers)
+                {
+                    todosObjetosColisionables.Add(locker.mesh.BoundingBox);
+                }
                                     camara.objetosColisionables = todosObjetosColisionables;
                                     camara.characterSphere = esferaCamara;
                                     if (!esperandoPuerta && !enLocker)
