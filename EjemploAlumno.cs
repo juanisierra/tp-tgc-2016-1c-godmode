@@ -773,10 +773,10 @@ namespace AlumnoEjemplos.GODMODE
                 if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
                 {
                     if (!espada.encontrado) sonidoObjeto.play(false);
-                    if ((!enemigoActivo) && (!espada.encontrado))
+                   /* if ((!enemigoActivo) && (!espada.encontrado))
                     {
                         ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
-                    }
+                    }*/
                     espada.encontrado = true;
                     
                 }
