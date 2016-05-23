@@ -289,10 +289,10 @@ namespace AlumnoEjemplos.GODMODE
                         {
                             objetosColisionables.Add(mesh.BoundingBox);
                         }
-                       /* foreach(Locker locker in listaLockers)
+                        foreach(Locker locker in listaLockers)
                           {
                          objetosColisionables.Add(locker.mesh.BoundingBox);
-                         }*/
+                         }
 
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
@@ -503,10 +503,6 @@ namespace AlumnoEjemplos.GODMODE
 
                                     todosObjetosColisionables.AddRange(objetosColisionables);
                                     todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
-                                    foreach(Locker locker in listaLockers)
-                {
-                    todosObjetosColisionables.Add(locker.mesh.BoundingBox);
-                }
                                     camara.objetosColisionables = todosObjetosColisionables;
                                     camara.characterSphere = esferaCamara;
                                     if (!esperandoPuerta && !enLocker)
@@ -806,7 +802,7 @@ namespace AlumnoEjemplos.GODMODE
                 if (enemigoActivo)
                 {
                     sonidoEnemigo.play();
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 1000f && !perdido && !enLocker)
+                    if (!perdido && !enLocker)
                     {
                         enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
                     }
