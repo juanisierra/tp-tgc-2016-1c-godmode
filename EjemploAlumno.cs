@@ -264,19 +264,19 @@ namespace AlumnoEjemplos.GODMODE
             spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), -150);
 
             listaLockers = new List<Locker>();
-            locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -250f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker1.posVista = new Vector3(-240f, 0, -255f);
-            locker1.lookAt = new Vector3(-230f, 2, -305f);
+            locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -240f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker1.posVista = new Vector3(-225.6352f, 50f, -197.2892f);
+            locker1.lookAt = new Vector3(-225.6328f, 49.94f, -196.7892f);
             listaLockers.Add(locker1);
 
-            locker2 = new Locker(alumnoMediaFolder, new Vector3(800f, 0, -900f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker2.posVista = new Vector3(820f, 0, -847.684f);
-            locker2.lookAt = new Vector3(840f, 2, -820.684f);
+            locker2 = new Locker(alumnoMediaFolder, new Vector3(805f, 0, -890f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker2.posVista = new Vector3(82.59220f, 50f, -853.2103f);
+            locker2.lookAt = new Vector3(820.009f, 49.97f, -850.4145f);
             listaLockers.Add(locker2);
 
             locker3 = new Locker(alumnoMediaFolder, new Vector3(-1170.824f, 0, 940f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker3.posVista = new Vector3(-1192.824f, 0, 1050f);
-            locker3.lookAt = new Vector3(-1192.824f, 0, 980f);
+            locker3.posVista = new Vector3(-1161.415f, 50f, 980.6960f);
+            locker3.lookAt = new Vector3(-1161.45f, 50f, 981.1906f);
             listaLockers.Add(locker3);
 
             #endregion
@@ -288,10 +288,10 @@ namespace AlumnoEjemplos.GODMODE
                         {
                             objetosColisionables.Add(mesh.BoundingBox);
                         }
-                        foreach(Locker locker in listaLockers)
+                       /* foreach(Locker locker in listaLockers)
                           {
                          objetosColisionables.Add(locker.mesh.BoundingBox);
-                         }
+                         }*/
 
             esferaCamara = new TgcBoundingSphere(camara.getPosition(), 20f); //Crea la esfera de la camara en la posicion de la camara
             #endregion
@@ -916,7 +916,7 @@ namespace AlumnoEjemplos.GODMODE
 
         private void ponerEnemigo(Vector3 posicion)
         {   if (!enemigoActivo)
-            {
+          {
                 enemigo.position(posicion); //PONER ENEMIGO
                 lastKnownPos = enemigo.getPosicion();
                 enemigoActivo = true;
