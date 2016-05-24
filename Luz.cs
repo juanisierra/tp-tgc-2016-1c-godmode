@@ -20,11 +20,15 @@ namespace AlumnoEjemplos.GODMODE
         Vector4[] pointLightPositions = new Vector4[5];
         float[] pointLightIntensity = new float[5];
         float[] pointLightAttenuation = new float[5];
-          
-            
-    public void prenderLuz(int tipo, TgcMesh mesh)
+
+        public Effect currentShader;
+        public Luz()
         {
-            Effect currentShader;
+            this.currentShader = godmodeSpotlightMultiDiffuse;
+        }
+        public void prenderLuz(int tipo, TgcMesh mesh)
+        {
+            
             
             if (tipo == 0)
             {
@@ -45,22 +49,23 @@ namespace AlumnoEjemplos.GODMODE
             //El Technique depende del tipo RenderType del mesh
             mesh.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(mesh.RenderType);
         }
-        public void renderizarLuz(int tipo, Vector3 posicionCamara, Vector3 direccionDeLuz, TgcMesh mesh, float intensidad,float temblor)
+        public void renderizarLuz(int tipo, Vector3 posicionCamara, Vector3 direccionDeLuz, TgcMesh mesh, float intensidad,float temblor,Boolean shadow)
         {
             var random = FastMath.Cos(6 * temblor);
 
             //Actualzar posición de la luz
             Vector3 lightPos = posicionCamara;
-
-            //Normalizar direccion de la luz
-
-            Vector3 lightDir = direccionDeLuz;
-            lightDir.Normalize();
             //Cargar variables shader de la luz
+            if (shadow)
+            { mesh.Technique = "RenderShadow";
+            } else
+            {
+                mesh.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(mesh.RenderType);
+            }
             if (tipo == 0)
             {   lightColors[0] = ColorValue.FromColor(Color.White);
                 pointLightPositions[0] = TgcParserUtils.vector3ToVector4(lightPos);
-                pointLightIntensity[0] = intensidad;
+                pointLightIntensity[0] = intensidad*2;
                 pointLightAttenuation[0] = 0.48f;
                 for (int i = 1; i < 5; i++)
                 {
@@ -73,7 +78,7 @@ namespace AlumnoEjemplos.GODMODE
                 mesh.Effect.SetValue("lightColor", lightColors);
                 mesh.Effect.SetValue("lightPosition", pointLightPositions);
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("spotLightDir", TgcParserUtils.vector3ToFloat3Array(lightDir));
+                mesh.Effect.SetValue("spotLightDir", TgcParserUtils.vector3ToFloat3Array(direccionDeLuz));
                 mesh.Effect.SetValue("lightIntensity", pointLightIntensity);
                 mesh.Effect.SetValue("lightAttenuation", pointLightAttenuation);
                 mesh.Effect.SetValue("spotLightAngleCos", FastMath.ToRad(39f));
