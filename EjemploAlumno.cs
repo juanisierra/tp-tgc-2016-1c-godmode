@@ -215,7 +215,7 @@ namespace AlumnoEjemplos.GODMODE
             }
             meshEnemigo = enemigos.loadMeshAndAnimationsFromFile(pathMesh, mediaPath, animaciones);
             meshEnemigo.playAnimation(animacionSeleccionada, true);
-            meshEnemigo.Position = new Vector3(-1503.234f, 0f, -20.93158f);
+            meshEnemigo.Position = new Vector3(2135.981f, 0, -780.9791f);
             meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
             meshEnemigo.rotateY(FastMath.PI / 2);
             enemigo.setMesh(meshEnemigo);
@@ -511,65 +511,64 @@ namespace AlumnoEjemplos.GODMODE
                 Device d3dDevice = GuiController.Instance.D3dDevice;
                 //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
 
-                #region Camara, Colisiones y Deteccion
+                #region Camara y Colisiones
 
-                                    todosObjetosColisionables.AddRange(objetosColisionables);
-                                    todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
-                                    camara.objetosColisionables = todosObjetosColisionables;
-                                    camara.characterSphere = esferaCamara;
-                                    if (!esperandoPuerta && !enLocker)
-                                    {
-                                        camara.updateCamera();
-                                    }
+                todosObjetosColisionables.AddRange(objetosColisionables);
+                todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
+                camara.objetosColisionables = todosObjetosColisionables;
+                camara.characterSphere = esferaCamara;
+                if (!esperandoPuerta && !enLocker)
+                {
+                    camara.updateCamera();
+                }
+                #endregion
 
-           
+                #region Deteccion del jugador
 
-                    #endregion
-                 #region Deteccion del jugador
+                if (enemigoActivo)
+                {
+                    int cantColisiones = 0;
+                    Vector3 origenRayo = enemigo.getPosicion();
+                    origenRayo.Y = 20;
+                    direccionRayo = camara.getPosition() - enemigo.getPosicion();
+                    direccionRayo.Y = 0;
+                    rayo.Origin = origenRayo;
+                    rayo.Direction = direccionRayo;
+                    Vector3 ptoIntersec;
+                    foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
+                    {
+                        if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
+                        {
+                            cantColisiones++;
+                            break;
+                        }
+                    }
 
-                                    if (enemigoActivo)
-                                    {
-                                        int cantColisiones = 0;
-                                        Vector3 origenRayo = enemigo.getPosicion();
-                                        origenRayo.Y = 20;
-                                        direccionRayo = camara.getPosition() - enemigo.getPosicion();
-                                        direccionRayo.Y = 0;
-                                        rayo.Origin = origenRayo;
-                                        rayo.Direction = direccionRayo;
-                                        Vector3 ptoIntersec;
-                                        foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
-                                        {
-                                            if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
-                                            {
-                                                cantColisiones++;
-                                                break;
-                                            }
-                                        }
+                    if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    {
+                        lastKnownPos = esferaCamara.Position;
+                        perdido = true;
+                        contadorDetecciones = 0;
+                    }
 
-                                        if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
-                                        {
-                                            lastKnownPos = esferaCamara.Position;
-                                            perdido = true;
-                                            contadorDetecciones = 0;
-                                        }
+                    if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
+                    {
+                        contadorDetecciones++;
+                        if (contadorDetecciones == 2)
+                        {
+                            if (perdido && enWaypoints) sonidoGrito.play();
+                            perdido = false; //Si se ve al jugador, indicar que se lo encontro
+                            enWaypoints = false;
+                            enemigoActivo = true; //RARO
+                            tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
+                            contadorDetecciones = 0;
+                        }
+                    }                   
+                }
+                #endregion
 
-                                        if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
-                                        {
-                                            contadorDetecciones++;
-                                            if (contadorDetecciones == 2)
-                                            {
-                                                if (perdido && enWaypoints) sonidoGrito.play();
-                                                perdido = false; //Si se ve al jugador, indicar que se lo encontro
-                                                enWaypoints = false;
-                                                enemigoActivo = true; //RARO
-                                                tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
-                                                contadorDetecciones = 0;
-                                            }
-                                        }
-                    
-                                    }
-                    #endregion
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
+
                 #region manejo de lockers
                 manejarLocker(locker1);
                 manejarLocker(locker2);
@@ -635,7 +634,7 @@ namespace AlumnoEjemplos.GODMODE
 
                        //Renderizar mesh de luz
 
-        temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
                 var random = FastMath.Cos(6 * temblorLuz);
                 var random2 = FastMath.Cos(12 * temblorLuz);
                 meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
@@ -836,7 +835,7 @@ namespace AlumnoEjemplos.GODMODE
                         tiempoBuscando = 15;
                         perdido = true;
                         enWaypoints = true;
-                        enemigo.moverAUltimoWaypoint();
+                        enemigo.irAWaypointMasCercano();
                     }
                     
                     //GAME OVER

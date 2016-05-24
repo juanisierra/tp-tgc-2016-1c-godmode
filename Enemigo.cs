@@ -14,13 +14,14 @@ namespace AlumnoEjemplos.GODMODE
 {
     class Enemigo
     {
-        private const int CANT_WAYPOINTS = 1;
+        private const int CANT_WAYPOINTS = 10;
         public TgcSkeletalMesh cuerpo;
-       /* static Vector3[] waypoints = new Vector3[]
-              {new Vector3(1f, 0f,1f), new Vector3(795.7219f,0f, 9.3205f), new Vector3(815.5751f, 0f, 766.1295f),
-               new Vector3(28.48632f, 0f, 817.5837f), new Vector3(-802.072f, 0f, 765.6752f), new Vector3(-804.0176f, 0f, -23.41319f),
-               new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f)};*/
-        static Vector3[] waypoints = new Vector3[] { new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f) };
+        static Vector3[] waypoints = new Vector3[]
+              {new Vector3(2135.981f, 0, -780.9791f), new Vector3(1121.311f, 0, -795.8734f), new Vector3(1119.649f, 0, -54.46498f),
+               new Vector3(798.399f, 0, -18.12312f), new Vector3(676.7241f, 0, 8.804145f), new Vector3(5.406677f, 0, -7.967796f),
+               new Vector3(-3.416103f, 0, 770.7191f), new Vector3(-807.0411f, 0, 763.6401f), new Vector3(-804.649f, 0, -21.21243f),
+               new Vector3(-1493.659f, 0, -21.32377f)};
+        // static Vector3[] waypoints = new Vector3[] { new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f) };
         Vector3 waypointObjetivo = waypoints[0];
         int indiceActual = -1;
         int paso = 1;
@@ -72,6 +73,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public void seguirWaypoints(float velocidad)
         {
+            this.irAWaypointMasCercano();
             if (Math.Abs(Vector3.Length(this.getPosicion() - waypointObjetivo)) < 10f)
             {
                 if (indiceActual >= CANT_WAYPOINTS - 1) paso = -1;
@@ -81,9 +83,23 @@ namespace AlumnoEjemplos.GODMODE
             }
             this.perseguir(waypointObjetivo, velocidad);
         }
-       public void moverAUltimoWaypoint()
+
+        public void moverAUltimoWaypoint()
         {
             this.mover(waypointObjetivo);
-       }
+        }
+
+        public void irAWaypointMasCercano()
+        {
+            float min = 2000f;
+            foreach (Vector3 waypoint in waypoints)
+            {
+                if (Vector3.Length(this.getPosicion() - waypoint) < min)
+                {
+                    min = Vector3.Length(this.getPosicion());
+                    waypointObjetivo = waypoint;
+                }
+            }
+        }
     }
 }
