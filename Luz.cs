@@ -8,18 +8,27 @@ using System.Drawing;
 using Microsoft.DirectX;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
+using TgcViewer.Utils.Shaders;
 
 namespace AlumnoEjemplos.GODMODE
 {
     class Luz
     {
-        
-        public void prenderLuz(int tipo, TgcMesh mesh)
+       public Vector3[] posicionesDeLuces = new Vector3[4];
+        Effect godmodeSpotlightMultiDiffuse = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\SpotlightMultiDifuse.fx");
+        ColorValue[] lightColors = new ColorValue[5];
+        Vector4[] pointLightPositions = new Vector4[5];
+        float[] pointLightIntensity = new float[5];
+        float[] pointLightAttenuation = new float[5];
+          
+            
+    public void prenderLuz(int tipo, TgcMesh mesh)
         {
             Effect currentShader;
+            
             if (tipo == 0)
             {
-                currentShader = GuiController.Instance.Shaders.TgcMeshSpotLightShader;
+                currentShader = godmodeSpotlightMultiDiffuse;
                 mesh.Effect = currentShader;
             } else if(tipo == 1 || tipo ==2)
             {
@@ -49,15 +58,30 @@ namespace AlumnoEjemplos.GODMODE
             lightDir.Normalize();
             //Cargar variables shader de la luz
             if (tipo == 0)
-            {
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.White));
-                mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
+            {   lightColors[0] = ColorValue.FromColor(Color.White);
+                pointLightPositions[0] = TgcParserUtils.vector3ToVector4(lightPos);
+                pointLightIntensity[0] = intensidad;
+                pointLightAttenuation[0] = 0.48f;
+                for (int i = 1; i < 5; i++)
+                {
+                    lightColors[i] = ColorValue.FromColor(Color.White);
+                    pointLightPositions[i] = TgcParserUtils.vector3ToVector4(posicionesDeLuces[i - 1]);
+                    pointLightIntensity[i] = (float)GuiController.Instance.Modifiers["lightIntensity"];
+                    pointLightAttenuation[i] = (float)GuiController.Instance.Modifiers["lightAttenuation"];
+                }
+
+                mesh.Effect.SetValue("lightColor", lightColors);
+                mesh.Effect.SetValue("lightPosition", pointLightPositions);
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
                 mesh.Effect.SetValue("spotLightDir", TgcParserUtils.vector3ToFloat3Array(lightDir));
-                mesh.Effect.SetValue("lightIntensity", intensidad);
-                mesh.Effect.SetValue("lightAttenuation", 0.48f);
+                mesh.Effect.SetValue("lightIntensity", pointLightIntensity);
+                mesh.Effect.SetValue("lightAttenuation", pointLightAttenuation);
                 mesh.Effect.SetValue("spotLightAngleCos", FastMath.ToRad(39f));
                 mesh.Effect.SetValue("spotLightExponent", 14f);
+
+              
+                    
+                
                 //Variables de los materiales
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
                 mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.White));

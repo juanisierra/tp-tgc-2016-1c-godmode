@@ -100,6 +100,7 @@ namespace AlumnoEjemplos.GODMODE
         int contadorDetecciones = 0;
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3;
+        TgcBox pruebaLuz;
         #endregion
 
         string alumnoMediaFolder;
@@ -108,7 +109,8 @@ namespace AlumnoEjemplos.GODMODE
         const int VELOCIDAD_PATRULLA = 50; 
         public override void init()
         {
-            
+            pruebaLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
+
             #region Menu
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
@@ -234,7 +236,14 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("perdido", perdido);
             
             GuiController.Instance.UserVars.addVar("poder", 0);
-            
+            GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,950);
+            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 100);
+            GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
+            miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
+            miLuz.posicionesDeLuces[1] = new Vector3(-150, 55, 252.5f);
+            miLuz.posicionesDeLuces[2] = new Vector3(1000, 1000, 1000);
+            miLuz.posicionesDeLuces[3] = new Vector3(1000, 1000, 1000);
+
 
             /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-151f, 1f, 549.04f), new Vector3(-11f, 1f, 749.04f), new Vector3(-51f, 1f, 649.04f));
              GuiController.Instance.Modifiers.addVertex3f("escaladoPuerta", new Vector3(-5f, -52.15f, -51f), new Vector3(10f, 52.15f, 51f), new Vector3(4.1f, 2.15f, 1f));*/
@@ -256,7 +265,7 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Lockers
-            GuiController.Instance.Modifiers.addVertex2f("posicionS", new Vector2(-1000, -1000), new Vector2(1000, 1000), new Vector2(0, 0));
+            
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
@@ -399,7 +408,9 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void render(float elapsedTime)
         {
-           
+            miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
+            pruebaLuz.Position = (Vector3)GuiController.Instance.Modifiers["posicionS"];
+            pruebaLuz.render();
             #region enMenu
             if (enMenu) {
 
