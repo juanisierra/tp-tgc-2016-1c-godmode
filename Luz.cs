@@ -100,7 +100,7 @@ namespace AlumnoEjemplos.GODMODE
                 mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.Yellow));
                 mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("lightIntensity", intensidad*2);
+                mesh.Effect.SetValue("lightIntensity", intensidad);
                 mesh.Effect.SetValue("lightAttenuation", 0.67f);
 
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
