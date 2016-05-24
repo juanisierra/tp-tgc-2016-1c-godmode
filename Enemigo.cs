@@ -73,7 +73,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public void seguirWaypoints(float velocidad)
         {
-            this.irAWaypointMasCercano();
+            //this.irAWaypointMasCercano();
             if (Math.Abs(Vector3.Length(this.getPosicion() - waypointObjetivo)) < 10f)
             {
                 if (indiceActual >= CANT_WAYPOINTS - 1) paso = -1;
@@ -91,12 +91,12 @@ namespace AlumnoEjemplos.GODMODE
 
         public void irAWaypointMasCercano()
         {
-            float min = 2000f;
+            float min = 10000f;
             foreach (Vector3 waypoint in waypoints)
             {
-                if (Vector3.Length(this.getPosicion() - waypoint) < min)
+                if (Math.Abs(Vector3.Length(this.getPosicion() - waypoint)) < min)
                 {
-                    min = Vector3.Length(this.getPosicion());
+                    min = Math.Abs(Vector3.Length(this.getPosicion() - waypoint));
                     waypointObjetivo = waypoint;
                 }
             }

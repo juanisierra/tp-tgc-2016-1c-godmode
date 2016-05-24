@@ -825,11 +825,12 @@ namespace AlumnoEjemplos.GODMODE
                             tiempoBuscando -= elapsedTime;
                             lastKnownPos.Y = 0;
                         }
-                        else {
+                        else
+                        {
                             enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
                         }
                     }
-                    //Ocultar enemigo
+                    //Retomar waypoints por tiempo de busqueda
                     if (!enWaypoints && tiempoBuscando <= 0)
                     {
                         tiempoBuscando = 15;
