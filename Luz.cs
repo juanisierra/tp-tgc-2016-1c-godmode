@@ -16,6 +16,7 @@ namespace AlumnoEjemplos.GODMODE
     {
        public Vector3[] posicionesDeLuces = new Vector3[4];
         Effect godmodeSpotlightMultiDiffuse = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\SpotlightMultiDifuse.fx");
+        Effect godmodePointLightMultiDiffuse = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\PointLightMultiDifuse.fx");
         ColorValue[] lightColors = new ColorValue[5];
         Vector4[] pointLightPositions = new Vector4[5];
         float[] pointLightIntensity = new float[5];
@@ -32,7 +33,7 @@ namespace AlumnoEjemplos.GODMODE
                 mesh.Effect = currentShader;
             } else if(tipo == 1 || tipo ==2)
             {
-                currentShader = GuiController.Instance.Shaders.TgcMeshPointLightShader;
+                currentShader = godmodePointLightMultiDiffuse;
                 mesh.Effect = currentShader;
             }
             
@@ -92,11 +93,23 @@ namespace AlumnoEjemplos.GODMODE
             }
             else if (tipo == 1)
             {
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.Yellow));
-                mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
+                lightColors[0] = ColorValue.FromColor(Color.Yellow);
+                pointLightPositions[0] = TgcParserUtils.vector3ToVector4(lightPos);
+                pointLightIntensity[0] = intensidad; //POR 2??    
+                pointLightAttenuation[0] = 0.67f;
+                for (int i = 1; i < 5; i++)
+                {
+                    lightColors[i] = ColorValue.FromColor(Color.White);
+                    pointLightPositions[i] = TgcParserUtils.vector3ToVector4(posicionesDeLuces[i - 1]);
+                    pointLightIntensity[i] = (float)GuiController.Instance.Modifiers["lightIntensity"];
+                    pointLightAttenuation[i] = (float)GuiController.Instance.Modifiers["lightAttenuation"];
+                }
+
+                mesh.Effect.SetValue("lightColor", lightColors);
+                mesh.Effect.SetValue("lightPosition", pointLightPositions);
                 mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("lightIntensity", intensidad*2);
-                mesh.Effect.SetValue("lightAttenuation", 0.67f);
+                mesh.Effect.SetValue("lightIntensity", pointLightIntensity);
+                mesh.Effect.SetValue("lightAttenuation", pointLightAttenuation);
 
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
@@ -108,12 +121,24 @@ namespace AlumnoEjemplos.GODMODE
             }
             else if (tipo==2)
             {
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.LightGoldenrodYellow));//PeachPuff  Orange
-                mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
-                mesh.Effect.SetValue("lightIntensity", intensidad+random*3);
-                mesh.Effect.SetValue("lightAttenuation", 0.67f);
+                lightColors[0] = ColorValue.FromColor(Color.LightGoldenrodYellow);
+                pointLightPositions[0] = TgcParserUtils.vector3ToVector4(lightPos);
+                pointLightIntensity[0] = intensidad + random * 3; 
+                pointLightAttenuation[0] = 0.67f;
 
+                for (int i = 1; i < 5; i++)
+                {
+                    lightColors[i] = ColorValue.FromColor(Color.White);
+                    pointLightPositions[i] = TgcParserUtils.vector3ToVector4(posicionesDeLuces[i - 1]);
+                    pointLightIntensity[i] = (float)GuiController.Instance.Modifiers["lightIntensity"];
+                    pointLightAttenuation[i] = (float)GuiController.Instance.Modifiers["lightAttenuation"];
+                }
+
+                mesh.Effect.SetValue("lightColor", lightColors);
+                mesh.Effect.SetValue("lightPosition", pointLightPositions);
+                mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
+                mesh.Effect.SetValue("lightIntensity", pointLightIntensity);
+                mesh.Effect.SetValue("lightAttenuation", pointLightAttenuation);
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
                 mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.White));
