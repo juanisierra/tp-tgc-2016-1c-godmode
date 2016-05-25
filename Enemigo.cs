@@ -61,6 +61,11 @@ namespace AlumnoEjemplos.GODMODE
             cuerpo.render();
         }
 
+        public void dispose()
+        {
+            cuerpo.dispose();
+        }
+
         public void perseguir(Vector3 objetivo, float velocidad)
         {
             Vector3 direccion = new Vector3(0, 0, 0);
