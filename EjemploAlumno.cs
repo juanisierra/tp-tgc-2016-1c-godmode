@@ -11,6 +11,7 @@ using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils._2D;
 using TgcViewer.Utils.TgcSkeletalAnimation;
 using TgcViewer.Utils.Sound;
+using System.Linq;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -65,6 +66,7 @@ namespace AlumnoEjemplos.GODMODE
         float tiempo;
         float tiempoIluminacion;
         Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
+        List<Puerta> puertas = new List<Puerta>();
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
         TgcSkeletalMesh meshEnemigo;
@@ -101,6 +103,7 @@ namespace AlumnoEjemplos.GODMODE
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3;
         TgcBox pruebaLuz;
+        bool enemigoEsperandoPuerta = false;
         #endregion
 
         string alumnoMediaFolder;
@@ -174,7 +177,7 @@ namespace AlumnoEjemplos.GODMODE
 
 
             #endregion
-
+ 
             tiempoBuscando = 15;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
@@ -402,6 +405,8 @@ namespace AlumnoEjemplos.GODMODE
             espada.mesh.rotateZ(1f);
             #endregion
 
+            puertas.Add(puerta1); puertas.Add(puerta2); puertas.Add(puerta3); puertas.Add(puerta4);
+            puertas.Add(puerta5); puertas.Add(puerta6); puertas.Add(puerta7);
         }
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
@@ -487,24 +492,27 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.UserVars.setValue("enLocker", enLocker);
                 GuiController.Instance.UserVars.setValue("lookAt", camara.getLookAt());
                 #region Manejo de Puertas
-                manejarPuerta(puerta1);
+                foreach (Puerta puerta in puertas)
+                {
+                    if (puerta != puertas.Last())
+                    manejarPuerta(puerta);
+                }
+                /*manejarPuerta(puerta1);
                 manejarPuerta(puerta2); //Hacer foreach
                 manejarPuerta(puerta3);
                 manejarPuerta(puerta4);
                 manejarPuerta(puerta5);
-                manejarPuerta(puerta6);
+                manejarPuerta(puerta6);*/
                 if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
-               {
-                    manejarPuerta(puerta7);
-               }
-                if (!puerta7.abierta) //Manejo de la ultima puerta para colisiones 
                 {
-                    puerta7.mesh.updateBoundingBox();
-                    puerta7.mesh.BoundingBox.transform(puerta7.mesh.Transform); //rota el bounding box
-                    objetosColisionablesCambiantes.Add(puerta7.mesh.BoundingBox);
+                    manejarPuerta(puertas.Last());
                 }
-
-
+                if (!puertas.Last().abierta) //Manejo de la ultima puerta para colisiones 
+                {
+                    puertas.Last().mesh.updateBoundingBox();
+                    puertas.Last().mesh.BoundingBox.transform(puertas.Last().mesh.Transform); //rota el bounding box
+                    objetosColisionablesCambiantes.Add(puertas.Last().mesh.BoundingBox);
+                }
 #endregion
 
                 //Device de DirectX para renderizar
@@ -524,10 +532,10 @@ namespace AlumnoEjemplos.GODMODE
                 #endregion
 
                 #region Deteccion del jugador
-
+                
                 if (enemigoActivo)
                 {
-                    int cantColisiones = 0;
+                    bool colisionDetectada = false;
                     Vector3 origenRayo = enemigo.getPosicion();
                     origenRayo.Y = 20;
                     direccionRayo = camara.getPosition() - enemigo.getPosicion();
@@ -539,23 +547,23 @@ namespace AlumnoEjemplos.GODMODE
                     {
                         if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
                         {
-                            cantColisiones++;
+                            colisionDetectada = true;
                             break;
                         }
                     }
 
-                    if (cantColisiones > 0 && !perdido && !enLocker) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    if (colisionDetectada && !perdido) //Indicar que se perdio al jugador al detectar colision, si no lo estaba
                     {
-                        lastKnownPos = esferaCamara.Position;
                         perdido = true;
                         contadorDetecciones = 0;
                     }
 
-                    if (cantColisiones == 0 && iteracion != 1 &&!enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
+                    if (!colisionDetectada && iteracion != 1 && !enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
                         contadorDetecciones++;
-                        if (contadorDetecciones == 2)
+                        if (contadorDetecciones >= 4 && !enemigoEsperandoPuerta)
                         {
+                            lastKnownPos = esferaCamara.Position;
                             if (perdido && enWaypoints) sonidoGrito.play();
                             perdido = false; //Si se ve al jugador, indicar que se lo encontro
                             enWaypoints = false;
@@ -813,22 +821,40 @@ namespace AlumnoEjemplos.GODMODE
                 if (enemigoActivo)
                 {
                     sonidoEnemigo.play();
-                    if (!perdido && !enLocker)
+                    if (!enWaypoints)
                     {
-                        enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
+                        if (perdido)
+                        {
+                            tiempoBuscando -= elapsedTime;
+                            foreach (Puerta puerta in puertas)
+                            {
+                                Vector3 ptoIntersec = new Vector3();
+                                if (TgcCollisionUtils.intersectRayAABB(rayo, puerta.mesh.BoundingBox, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
+                                {
+                                    enWaypoints = true;
+                                    enemigo.irAWaypointMasCercano();
+                                }
+                            }
+                        }
+                        enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
                     }
                     else
                     {
-                        if (!enWaypoints)
+                        enemigoEsperandoPuerta = false;
+                        foreach (Puerta puerta in puertas)
                         {
-                            enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
-                            tiempoBuscando -= elapsedTime;
-                            lastKnownPos.Y = 0;
+                            Vector3 posicionPuerta = puerta.mesh.Position; posicionPuerta.Y = 0;
+                            if (Math.Abs(Vector3.Length(enemigo.getPosicion() - posicionPuerta)) < 110f && !puerta.abierta)
+                            {
+                                if (!puerta.girando)
+                                    sonidoPuertas.play(false);
+                                puerta.girando = true;
+                                enemigoEsperandoPuerta = true;
+                                break;
+                            }
                         }
-                        else
-                        {
+                        if (!enemigoEsperandoPuerta)
                             enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
-                        }
                     }
                     //Retomar waypoints por tiempo de busqueda
                     if (!enWaypoints && tiempoBuscando <= 0)
@@ -889,21 +915,21 @@ namespace AlumnoEjemplos.GODMODE
         }
 
         private void manejarPuerta(Puerta puerta)
-         {
-             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
-             {
+        {
+            if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
+            {
                 sonidoPuertas.play(false);
-                 puerta.girando = true;
-                 esperandoPuerta = true;
-             }
-             puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
+                puerta.girando = true;
+                esperandoPuerta = true;
+            }
+            puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
             if (!puerta.abierta)
             {
                 puerta.mesh.updateBoundingBox();
                 puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
                 objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
             }
-         }
+        }
         private void manejarLocker(Locker locker)
         {
             if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F) && perdido) //Sumo el vector para compensar la altura
@@ -988,7 +1014,7 @@ namespace AlumnoEjemplos.GODMODE
             tiempo = 0;
             tiempoBuscando = 15;
             meshEnemigo.Position = new Vector3(500, 0, 0);
-            enemigoActivo = false;
+            enemigoActivo = true;
             iteracion = 0;
             perdido = true;
             lastKnownPos = enemigo.getPosicion();
@@ -1003,27 +1029,12 @@ namespace AlumnoEjemplos.GODMODE
             locket.encontrado = false;
             espada.encontrado = false;
             llave.encontrado = false;
-            puerta1.abierta = false;
-            puerta1.girando = false;
-            puerta1.angulo = 1.605f;
-            puerta2.abierta = false;
-            puerta2.angulo = 1.605f;
-            puerta2.girando = false;
-            puerta3.abierta = false;
-            puerta3.angulo = 1.605f;
-            puerta3.girando = false;
-            puerta4.abierta = false;
-            puerta4.angulo = 1.605f;
-            puerta4.girando = false;
-            puerta5.abierta = false;
-            puerta5.angulo = 1.605f;
-            puerta5.girando = false;
-            puerta6.abierta = false;
-            puerta6.angulo = 1.605f;
-            puerta6.girando = false;
-            puerta7.abierta = false;
-            puerta7.angulo = 1.605f;
-            puerta7.girando = false;
+            foreach(Puerta puerta in puertas)
+            {
+                puerta.abierta = false;
+                puerta.girando = false;
+                puerta.angulo = 1.605f;
+            }
         }
 
     }
