@@ -242,10 +242,10 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,950);
             GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 100);
             GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
-            miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
-            miLuz.posicionesDeLuces[1] = new Vector3(-150, 55, 252.5f);
-            miLuz.posicionesDeLuces[2] = new Vector3(1000, 1000, 1000);
-            miLuz.posicionesDeLuces[3] = new Vector3(1000, 1000, 1000);
+            miLuz.posicionesDeLuces[1] = new Vector3(240, 60, 145.5f);
+            miLuz.posicionesDeLuces[1] = new Vector3(-260, 60, -133.2f);
+            miLuz.posicionesDeLuces[2] = new Vector3(997, 60, -645);
+            miLuz.posicionesDeLuces[3] = new Vector3(-1314, 60, 1077);
 
 
             /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-151f, 1f, 549.04f), new Vector3(-11f, 1f, 749.04f), new Vector3(-51f, 1f, 649.04f));
