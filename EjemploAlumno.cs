@@ -1106,6 +1106,14 @@ namespace AlumnoEjemplos.GODMODE
             device.BeginScene();
             //Dibujamos todos los meshes del escenario
             renderizarMeshesConEfecto(meshesParaNightVision, effect, "DefaultTechnique");
+            bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+
+
+            //Actualzar posición de la luz
+            Vector3 lightPos = camara.getPosition();
+            //Normalizar direccion de la luz
+            Vector3 lightDir = camara.target - camara.eye;
+            renderizarMeshes(meshesParaNightVision, lightEnable, lightPos, lightDir);
             meshLinterna.Effect = effect;
             meshLinterna.Technique = "DefaultTechnique";
             meshVela.Effect = effect;
