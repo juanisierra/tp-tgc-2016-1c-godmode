@@ -14,6 +14,7 @@ using TgcViewer.Utils.Sound;
 using System.Linq;
 using System.Windows.Forms;
 using TgcViewer.Utils;
+using TgcViewer.Utils.Shaders;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -74,8 +75,6 @@ namespace AlumnoEjemplos.GODMODE
         TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
         TgcSkeletalMesh meshEnemigo;
         Enemigo enemigo = new Enemigo();
-        Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
-        bool corriendo = false;
         bool mostrarInstrucciones = false;
         TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
         bool perdido = true;
@@ -107,13 +106,17 @@ namespace AlumnoEjemplos.GODMODE
         Locker locker1, locker2, locker3;
         TgcBox pruebaLuz;
         bool enemigoEsperandoPuerta = false;
-        Effect effect;
+        Effect effect,efectoMiedo;
         /*NightVision*/
         Surface g_pDepthStencil;     // Depth-stencil buffer 
         Texture g_pRenderTarget, g_pGlowMap, g_pRenderTarget4, g_pRenderTarget4Aux;
         VertexBuffer g_pVBV3D;
         int cant_pasadas = 3;
         Boolean conNightVision = false;
+        /*Miedo*/
+        VertexBuffer screenQuadVB;
+        Texture renderTarget2D;
+        Surface pOldRT;
         #endregion
 
         string alumnoMediaFolder;
@@ -220,7 +223,8 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
+            //tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
+            tiempoIluminacion = 15; // 60 segundos * 3 = 3 minutos
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -245,7 +249,6 @@ namespace AlumnoEjemplos.GODMODE
             #region Modifiers
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
-            GuiController.Instance.Modifiers.addBoolean("optimizar", "optimizar", true);
             GuiController.Instance.Modifiers.addVertex3f("posVista", new Vector3(-20f, 49f, -20f), new Vector3(20f, 51f, 20f), new Vector3(0, 50, 0));
             //Modifiers para desplazamiento del personaje
             GuiController.Instance.UserVars.addVar("posicion");
@@ -477,6 +480,32 @@ namespace AlumnoEjemplos.GODMODE
                     4, d3dDevice, Usage.Dynamic | Usage.WriteOnly,
                         CustomVertex.PositionTextured.Format, Pool.Default);
             g_pVBV3D.SetData(vertices, 0, LockFlags.None);
+            #endregion
+            #region Carga shader Miedo
+            CustomVertex.PositionTextured[] screenQuadVertices = new CustomVertex.PositionTextured[]
+           {
+                new CustomVertex.PositionTextured( -1, 1, 1, 0,0),
+                new CustomVertex.PositionTextured(1,  1, 1, 1,0),
+                new CustomVertex.PositionTextured(-1, -1, 1, 0,1),
+                new CustomVertex.PositionTextured(1,-1, 1, 1,1)
+           };
+            //vertex buffer de los triangulos
+            screenQuadVB = new VertexBuffer(typeof(CustomVertex.PositionTextured),
+                    4, d3dDevice, Usage.Dynamic | Usage.WriteOnly,
+                        CustomVertex.PositionTextured.Format, Pool.Default);
+            screenQuadVB.SetData(screenQuadVertices, 0, LockFlags.None);
+
+            //Creamos un Render Targer sobre el cual se va a dibujar la pantalla
+            renderTarget2D = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+
+            //Cargar shader con efectos de Post-Procesado
+            efectoMiedo = TgcShaders.loadEffect(alumnoMediaFolder + "GODMODE\\Media\\Shaders\\Miedo.fx");
+
+            //Configurar Technique dentro del shader
+            efectoMiedo.Technique = "OndasTechnique";
             #endregion
         }
 
@@ -784,16 +813,18 @@ namespace AlumnoEjemplos.GODMODE
                 //Normalizar direccion de la luz
                 Vector3 lightDir = camara.target - camara.eye;
                 lightDir.Normalize();
-                if (!conNightVision)
+                if (!conNightVision && tiempoIluminacion!=15)
                 {
                     renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
                     //Renderizar mesh de luz
                     enemigo.render();
                     renderizarObjetoIluminacion(elapsedTime);
 
-                } else
+                } else if(conNightVision)
                 {
                     renderizarNightVision(elapsedTime);
+                } else if(!conNightVision && tiempoIluminacion == 15){
+                    renderizarMiedo(elapsedTime);
                 }
                 if (enLocker)
                 {
@@ -1291,7 +1322,110 @@ namespace AlumnoEjemplos.GODMODE
             TgcCollisionUtils.FrustumResult r = TgcCollisionUtils.classifyFrustumAABB(GuiController.Instance.Frustum, objeto);
             return (r != TgcCollisionUtils.FrustumResult.OUTSIDE);
         }
+        void renderizarMiedo(float elapsedTime)
+        {
+            Device device  = GuiController.Instance.D3dDevice;
+            //Cargamos el Render Targer al cual se va a dibujar la escena 3D. Antes nos guardamos el surface original
+            //En vez de dibujar a la pantalla, dibujamos a un buffer auxiliar, nuestro Render Target.
+            pOldRT = device.GetRenderTarget(0);
+            Surface pSurf = renderTarget2D.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
 
+
+            //Dibujamos la escena comun, pero en vez de a la pantalla al Render Target
+            device.BeginScene();
+
+
+            //Como estamos en modo CustomRenderEnabled, tenemos que dibujar todo nosotros, incluso el contador de FPS
+            GuiController.Instance.Text3d.drawText("FPS: " + HighResolutionTimer.Instance.FramesPerSecond, 0, 0, Color.Yellow);
+
+            //Tambien hay que dibujar el indicador de los ejes cartesianos
+            GuiController.Instance.AxisLines.render();
+            bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+
+
+            //Actualzar posición de la luz
+            Vector3 lightPos = camara.getPosition();
+            //Normalizar direccion de la luz
+            Vector3 lightDir = camara.target - camara.eye;
+            lightDir.Normalize();
+            //Dibujamos todos los meshes del escenario
+            renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
+            enemigo.render();
+            renderizarObjetoIluminacion(elapsedTime);
+            foreach (Recarga rec in recargas)
+            {
+                if (!rec.usada)
+                {
+                    
+                    rec.mesh.render();
+                }
+            }
+            if (!espada.encontrado)
+            {
+                espada.mesh.render();
+            }
+            if (!locket.encontrado)
+            {
+               
+                locket.mesh.render();
+            }
+            if (!copa.encontrado)
+            {
+                
+                copa.mesh.render();
+            }
+            if (!llave.encontrado)
+            {
+                
+                llave.mesh.render();
+            }
+            //Terminamos manualmente el renderizado de esta escena. Esto manda todo a dibujar al GPU al Render Target que cargamos antes
+            device.EndScene();
+
+            //Liberar memoria de surface de Render Target
+            pSurf.Dispose();
+
+            //Si quisieramos ver que se dibujo, podemos guardar el resultado a una textura en un archivo para debugear su resultado (ojo, es lento)
+            //TextureLoader.Save(GuiController.Instance.ExamplesMediaDir + "Shaders\\render_target.bmp", ImageFileFormat.Bmp, renderTarget2D);
+
+
+            //Ahora volvemos a restaurar el Render Target original (osea dibujar a la pantalla)
+            device.SetRenderTarget(0, pOldRT);
+
+
+            //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
+            drawPostProcess(device);
+        }
+        private void drawPostProcess(Device d3dDevice)
+        {
+            //Arrancamos la escena
+            d3dDevice.BeginScene();
+
+            //Cargamos para renderizar el unico modelo que tenemos, un Quad que ocupa toda la pantalla, con la textura de todo lo dibujado antes
+            d3dDevice.VertexFormat = CustomVertex.PositionTextured.Format;
+            d3dDevice.SetStreamSource(0, screenQuadVB, 0);
+
+            efectoMiedo.Technique = "OndasTechnique";
+
+            //Cargamos parametros en el shader de Post-Procesado
+            efectoMiedo.SetValue("render_target2D", renderTarget2D);
+            efectoMiedo.SetValue("ondas_vertical_length", 60);
+            efectoMiedo.SetValue("ondas_size", 0.01f);
+
+
+            //Limiamos la pantalla y ejecutamos el render del shader
+            d3dDevice.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            efectoMiedo.Begin(FX.None);
+            efectoMiedo.BeginPass(0);
+            d3dDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            efectoMiedo.EndPass();
+            efectoMiedo.End();
+
+            //Terminamos el renderizado de la escena
+            d3dDevice.EndScene();
+        }
         private void reiniciarJuego()
         {
             conNightVision = false;
