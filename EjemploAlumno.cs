@@ -223,8 +223,8 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            //tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
-            tiempoIluminacion = 15; // 60 segundos * 3 = 3 minutos
+            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
+            
             #endregion
 
             #region Carga de Mesh para Enemigo
