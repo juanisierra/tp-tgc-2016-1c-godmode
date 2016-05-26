@@ -980,9 +980,12 @@ namespace AlumnoEjemplos.GODMODE
         {
             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
             {
-                sonidoPuertas.play(false);
-                puerta.girando = true;
-                esperandoPuerta = true;
+                if (!puerta.girando)
+                {
+                    sonidoPuertas.play(false);
+                    puerta.girando = true;
+                    esperandoPuerta = true;
+                }
             }
             puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
             if (!puerta.abierta)
