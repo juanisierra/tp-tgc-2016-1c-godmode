@@ -12,6 +12,8 @@ using TgcViewer.Utils._2D;
 using TgcViewer.Utils.TgcSkeletalAnimation;
 using TgcViewer.Utils.Sound;
 using System.Linq;
+using System.Windows.Forms;
+using TgcViewer.Utils;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -55,6 +57,7 @@ namespace AlumnoEjemplos.GODMODE
         List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
         List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
         List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
+        List<TgcMesh> meshesParaNightVision = new List<TgcMesh>();
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
@@ -104,6 +107,13 @@ namespace AlumnoEjemplos.GODMODE
         Locker locker1, locker2, locker3;
         TgcBox pruebaLuz;
         bool enemigoEsperandoPuerta = false;
+        Effect effect;
+        /*NightVision*/
+        Surface g_pDepthStencil;     // Depth-stencil buffer 
+        Texture g_pRenderTarget, g_pGlowMap, g_pRenderTarget4, g_pRenderTarget4Aux;
+        VertexBuffer g_pVBV3D;
+        int cant_pasadas = 3;
+        Boolean conNightVision = false;
         #endregion
 
         string alumnoMediaFolder;
@@ -117,6 +127,8 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void init()
         {
+            GuiController.Instance.CustomRenderEnabled = true;
+
             pruebaLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
 
             #region Menu
@@ -412,6 +424,60 @@ namespace AlumnoEjemplos.GODMODE
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
             #endregion
+            #region Cargo shader nightvision
+            String compilationErrors;
+            effect = Effect.FromFile(GuiController.Instance.D3dDevice,
+                alumnoMediaFolder + "GODMODE\\Media\\Shaders\\GaussianBlur.fx",
+                null, null, ShaderFlags.PreferFlowControl, null, out compilationErrors);
+            if (effect == null)
+            {
+                throw new Exception("Error al cargar shader. Errores: " + compilationErrors);
+            }
+            //Configurar Technique dentro del shader
+            effect.Technique = "DefaultTechnique";
+            g_pDepthStencil = d3dDevice.CreateDepthStencilSurface(d3dDevice.PresentationParameters.BackBufferWidth,
+                                                                        d3dDevice.PresentationParameters.BackBufferHeight,
+                                                                        DepthFormat.D24S8,
+                                                                        MultiSampleType.None,
+                                                                        0,
+                                                                        true);
+
+            // inicializo el render target
+            g_pRenderTarget = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pGlowMap = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pRenderTarget4 = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth / 4
+                    , d3dDevice.PresentationParameters.BackBufferHeight / 4, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pRenderTarget4Aux = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth / 4
+                    , d3dDevice.PresentationParameters.BackBufferHeight / 4, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            effect.SetValue("g_RenderTarget", g_pRenderTarget);
+
+            // Resolucion de pantalla
+            effect.SetValue("screen_dx", d3dDevice.PresentationParameters.BackBufferWidth);
+            effect.SetValue("screen_dy", d3dDevice.PresentationParameters.BackBufferHeight);
+
+            CustomVertex.PositionTextured[] vertices = new CustomVertex.PositionTextured[]
+            {
+                new CustomVertex.PositionTextured( -1, 1, 1, 0,0),
+                new CustomVertex.PositionTextured(1,  1, 1, 1,0),
+                new CustomVertex.PositionTextured(-1, -1, 1, 0,1),
+                new CustomVertex.PositionTextured(1,-1, 1, 1,1)
+            };
+            //vertex buffer de los triangulos
+            g_pVBV3D = new VertexBuffer(typeof(CustomVertex.PositionTextured),
+                    4, d3dDevice, Usage.Dynamic | Usage.WriteOnly,
+                        CustomVertex.PositionTextured.Format, Pool.Default);
+            g_pVBV3D.SetData(vertices, 0, LockFlags.None);
+            #endregion
         }
 
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
@@ -582,7 +648,32 @@ namespace AlumnoEjemplos.GODMODE
                 manejarLocker(locker3);
 
                 #endregion
+                #region Calculos Tiempo Iluminacion
 
+                tiempoIluminacion -= elapsedTime;
+                if (tiempoIluminacion <= 15)
+                    tiempoIluminacion = 15;
+                tiempo += elapsedTime;
+                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+                var random = FastMath.Cos(6 * temblorLuz);
+                foreach (Recarga pila in recargas)
+                {
+                    if (Math.Abs(Vector3.Length(camara.eye - pila.mesh.Position)) < 30f)
+                    {
+                        if (!pila.usada)
+                        {
+                            tiempoIluminacion = 100f;
+                            sonidoPilas.play();
+                        }
+                        pila.usada = true;
+                        tiempoIluminacion = 100f;
+
+                    }
+                    pila.flotar(random, elapsedTime,conNightVision);
+                    GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
+                    GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
+                }
+                #endregion
                 #region Mover Enemigo
                 if (enemigoActivo)
                 {
@@ -644,6 +735,38 @@ namespace AlumnoEjemplos.GODMODE
                 }
 
                 #endregion
+                #region Manejo de Objetos a Buscar
+                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
+                {
+                    if (!copa.encontrado) sonidoObjeto.play(false);
+                    copa.encontrado = true;
+                    ganado = true;
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
+                {
+                    if (!espada.encontrado) sonidoObjeto.play(false);
+                    /* if ((!enemigoActivo) && (!espada.encontrado))
+                     {
+                         ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
+                     }*/
+                    espada.encontrado = true;
+
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
+                {
+                    if (!locket.encontrado) sonidoObjeto.play(false);
+                    locket.encontrado = true;
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
+                {
+                    if (!llave.encontrado) sonidoObjeto.play(false);
+                    llave.encontrado = true;
+                }
+                llave.flotar(random, elapsedTime, 40f,conNightVision);
+                espada.flotar(random, elapsedTime, 10f, conNightVision);
+                copa.flotar(random, elapsedTime, 30f, conNightVision);
+                locket.flotar(random, elapsedTime, 30f, conNightVision);
+                #endregion
                 #region Renderizado
                 todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
@@ -661,11 +784,17 @@ namespace AlumnoEjemplos.GODMODE
                 //Normalizar direccion de la luz
                 Vector3 lightDir = camara.target - camara.eye;
                 lightDir.Normalize();
+                if (!conNightVision)
+                {
                     renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
-                //Renderizar mesh de luz
-                enemigo.render();
-                renderizarObjetoIluminacion(elapsedTime);
+                    //Renderizar mesh de luz
+                    enemigo.render();
+                    renderizarObjetoIluminacion(elapsedTime);
 
+                } else
+                {
+                    renderizarNightVision(elapsedTime);
+                }
                 if (enLocker)
                 {
                     //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
@@ -679,37 +808,6 @@ namespace AlumnoEjemplos.GODMODE
                 }
                 #endregion
 
-
-
-                #region Sprite locker
-
-                #endregion
-                #region Calculos Tiempo Iluminacion
-
-                tiempoIluminacion -= elapsedTime;
-                if (tiempoIluminacion <= 15)
-                    tiempoIluminacion = 15;
-                tiempo += elapsedTime;
-                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
-                var random = FastMath.Cos(6 * temblorLuz);
-                foreach (Recarga pila in recargas)
-                {
-                    if (Math.Abs(Vector3.Length(camara.eye - pila.mesh.Position)) < 30f)
-                    {
-                        if (!pila.usada)
-                        {
-                            tiempoIluminacion = 100f;
-                            sonidoPilas.play();
-                        }
-                        pila.usada = true;
-                        tiempoIluminacion = 100f;
-
-                    }
-                    pila.flotar(random, elapsedTime);
-                    GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
-                    GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
-                }
-                #endregion
                 #region Sprite de Bateria
                 if (tiempoIluminacion <= 40)
                 {
@@ -754,6 +852,10 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ObjetoIluminacion = 2;
                 }
+                if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.R))
+                {
+                    conNightVision = !conNightVision;
+                }
 
 
 
@@ -764,10 +866,10 @@ namespace AlumnoEjemplos.GODMODE
                  }*/
 
 
-#endregion
+                #endregion
 
                 //REGION COMENTADA
-#region Aparecer enemigo
+                #region Aparecer enemigo
                 /* Aparicion aleatoria de enemigo           
                 if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1288,50,372))) < 400f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
                 {
@@ -781,41 +883,10 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ponerEnemigo(new Vector3(1615f, 0f, -525f));
                 }
-                */               
-#endregion
+                */
+                #endregion
 
-#region Manejo de Objetos a Buscar
-                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
-                {
-                    if (!copa.encontrado) sonidoObjeto.play(false);
-                    copa.encontrado = true;
-                    ganado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
-                {
-                    if (!espada.encontrado) sonidoObjeto.play(false);
-                   /* if ((!enemigoActivo) && (!espada.encontrado))
-                    {
-                        ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
-                    }*/
-                    espada.encontrado = true;
-                    
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
-                {
-                    if (!locket.encontrado) sonidoObjeto.play(false);
-                    locket.encontrado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
-                {
-                    if (!llave.encontrado) sonidoObjeto.play(false);
-                    llave.encontrado = true;
-                }
-                llave.flotar(random, elapsedTime, 40f);
-                espada.flotar(random, elapsedTime, 10f);
-                copa.flotar(random, elapsedTime, 30f);
-                locket.flotar(random, elapsedTime, 30f);
-#endregion
+               
 
 
 #region Contador Objetos
@@ -843,6 +914,7 @@ namespace AlumnoEjemplos.GODMODE
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
             }
+            GuiController.Instance.Text3d.drawText("FPS: " + HighResolutionTimer.Instance.FramesPerSecond, 0, 0, Color.Yellow);
         }
 
         public override void close()
@@ -959,6 +1031,24 @@ namespace AlumnoEjemplos.GODMODE
             }
             return cantRenderizados;
         }
+        private int renderizarMeshesConEfecto(List<TgcMesh> meshes,Effect effect, String technique)
+        {
+            int cantRenderizados = 0;
+            foreach (TgcMesh m in meshes)
+            {   
+                
+                //Solo mostrar la malla si colisiona contra el Frustum
+
+                if (hayQueRenderizarlo(m.BoundingBox))
+                {
+                   m.Effect = effect;
+                m.Technique = technique;
+                    m.render();
+                    cantRenderizados++;
+                }
+            }
+            return cantRenderizados;
+        }
         private void renderizarObjetoIluminacion(float elapsedTime)
         {
 
@@ -986,6 +1076,177 @@ namespace AlumnoEjemplos.GODMODE
 
             GuiController.Instance.D3dDevice.Transform.View = matrizView;
         }
+        private void renderizarNightVision(float elapsedTime)
+        {
+
+            meshesParaNightVision.Clear();
+            meshesParaNightVision.AddRange(todosLosMeshesIluminables);
+            meshesParaNightVision.Add(espada.mesh);
+            meshesParaNightVision.Add(locket.mesh);
+            meshesParaNightVision.Add(copa.mesh);
+            meshesParaNightVision.Add(llave.mesh);
+            foreach (Recarga recarga in recargas)
+            {
+                meshesParaNightVision.Add(recarga.mesh);
+            }
+            Device device = GuiController.Instance.D3dDevice;
+            Control panel3d = GuiController.Instance.Panel3d;
+            float aspectRatio = (float)panel3d.Width / (float)panel3d.Height;
+
+            // dibujo la escena una textura 
+            effect.Technique = "DefaultTechnique";
+            // guardo el Render target anterior y seteo la textura como render target
+            Surface pOldRT = device.GetRenderTarget(0);
+            Surface pSurf = g_pRenderTarget.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            // hago lo mismo con el depthbuffer, necesito el que no tiene multisampling
+            Surface pOldDS = device.DepthStencilSurface;
+            device.DepthStencilSurface = g_pDepthStencil;
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            device.BeginScene();
+            //Dibujamos todos los meshes del escenario
+            renderizarMeshesConEfecto(meshesParaNightVision, effect, "DefaultTechnique");
+            meshLinterna.Effect = effect;
+            meshLinterna.Technique = "DefaultTechnique";
+            meshVela.Effect = effect;
+            meshVela.Technique = "DefaultTechnique";
+            meshFarol.Effect = effect;
+            meshFarol.Technique = "DefaultTechnique";
+            renderizarObjetoIluminacion(elapsedTime);
+            meshLinterna.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshLinterna.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshLinterna.RenderType);
+            meshVela.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshVela.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshVela.RenderType);
+            meshFarol.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshFarol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshFarol.RenderType);
+            //Render personames enemigos
+            enemigo.render();
+            device.EndScene();
+            pSurf.Dispose();
+
+
+            // dibujo el glow map
+            effect.Technique = "DefaultTechnique";
+            pSurf = g_pGlowMap.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            device.BeginScene();
+
+            //Dibujamos SOLO los meshes que tienen glow brillantes
+            //Render personaje brillante
+            //Render personames enemigos
+            enemigo.render();
+
+
+            // El resto opacos
+            renderizarMeshesConEfecto(meshesParaNightVision, effect, "DibujarObjetosOscuros");
+            meshLinterna.Effect = effect;
+            meshLinterna.Technique = "DibujarObjetosOscuros";
+            meshVela.Effect = effect;
+            meshVela.Technique = "DibujarObjetosOscuros";
+            meshFarol.Effect = effect;
+            meshFarol.Technique = "DibujarObjetosOscuros";
+            renderizarObjetoIluminacion(elapsedTime);
+            meshLinterna.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshLinterna.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshLinterna.RenderType);
+            meshVela.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshVela.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshVela.RenderType);
+            meshFarol.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshFarol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshFarol.RenderType);
+            device.EndScene();
+            pSurf.Dispose();
+
+            // Hago un blur sobre el glow map
+            // 1er pasada: downfilter x 4
+            // -----------------------------------------------------
+            pSurf = g_pRenderTarget4.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.BeginScene();
+            effect.Technique = "DownFilter4";
+            device.VertexFormat = CustomVertex.PositionTextured.Format;
+            device.SetStreamSource(0, g_pVBV3D, 0);
+            effect.SetValue("g_RenderTarget", g_pGlowMap);
+
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            effect.Begin(FX.None);
+            effect.BeginPass(0);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect.EndPass();
+            effect.End();
+            pSurf.Dispose();
+            device.EndScene();
+            device.DepthStencilSurface = pOldDS;
+
+            // Pasadas de blur
+            for (int P = 0; P < cant_pasadas; ++P)
+            {
+                // Gaussian blur Horizontal
+                // -----------------------------------------------------
+                pSurf = g_pRenderTarget4Aux.GetSurfaceLevel(0);
+                device.SetRenderTarget(0, pSurf);
+                // dibujo el quad pp dicho :
+                device.BeginScene();
+                effect.Technique = "GaussianBlurSeparable";
+                device.VertexFormat = CustomVertex.PositionTextured.Format;
+                device.SetStreamSource(0, g_pVBV3D, 0);
+                effect.SetValue("g_RenderTarget", g_pRenderTarget4);
+
+                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+                effect.Begin(FX.None);
+                effect.BeginPass(0);
+                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+                effect.EndPass();
+                effect.End();
+                pSurf.Dispose();
+                device.EndScene();
+
+                pSurf = g_pRenderTarget4.GetSurfaceLevel(0);
+                device.SetRenderTarget(0, pSurf);
+                pSurf.Dispose();
+
+                //  Gaussian blur Vertical
+                // -----------------------------------------------------
+                device.BeginScene();
+                effect.Technique = "GaussianBlurSeparable";
+                device.VertexFormat = CustomVertex.PositionTextured.Format;
+                device.SetStreamSource(0, g_pVBV3D, 0);
+                effect.SetValue("g_RenderTarget", g_pRenderTarget4Aux);
+
+                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+                effect.Begin(FX.None);
+                effect.BeginPass(1);
+                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+                effect.EndPass();
+                effect.End();
+                device.EndScene();
+
+            }
+
+
+            //  To Gray Scale
+            // -----------------------------------------------------
+            // Ultima pasada vertical va sobre la pantalla pp dicha
+            device.SetRenderTarget(0, pOldRT);
+            //pSurf = g_pRenderTarget4Aux.GetSurfaceLevel(0);
+            //device.SetRenderTarget(0, pSurf);
+
+            device.BeginScene();
+            effect.Technique = "GrayScale";
+            device.VertexFormat = CustomVertex.PositionTextured.Format;
+            device.SetStreamSource(0, g_pVBV3D, 0);
+            effect.SetValue("g_RenderTarget", g_pRenderTarget);
+            effect.SetValue("g_GlowMap", g_pRenderTarget4Aux);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            effect.Begin(FX.None);
+            effect.BeginPass(0);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect.EndPass();
+            effect.End();
+
+
+            device.EndScene();
+        
+    }
         static public bool hayQueRenderizarlo(TgcBoundingBox objeto)
         {
             TgcCollisionUtils.FrustumResult r = TgcCollisionUtils.classifyFrustumAABB(GuiController.Instance.Frustum, objeto);
