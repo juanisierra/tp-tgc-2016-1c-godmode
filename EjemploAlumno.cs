@@ -920,7 +920,7 @@ namespace AlumnoEjemplos.GODMODE
         public override void close()
         {
             tgcScene.disposeAll();
-            esferaCamara.dispose();
+           /* esferaCamara.dispose();
             camara.characterSphere.dispose();
             sonidoEnemigo.dispose(); sonidoGrito.dispose(); sonidoPilas.dispose(); sonidoObjeto.dispose(); sonidoPuertas.dispose();
             enemigo.dispose();
@@ -942,7 +942,7 @@ namespace AlumnoEjemplos.GODMODE
             foreach (TgcBoundingBox bb in objetosColisionablesCambiantes)
                 bb.dispose(); objetosColisionablesCambiantes.Clear();
             foreach (TgcBoundingBox bb in todosObjetosColisionables)
-                bb.dispose(); todosObjetosColisionables.Clear();
+                bb.dispose(); todosObjetosColisionables.Clear();*/
         }
 
         private void manejarPuerta(Puerta puerta)
@@ -1080,7 +1080,7 @@ namespace AlumnoEjemplos.GODMODE
         {
 
             meshesParaNightVision.Clear();
-            meshesParaNightVision.AddRange(todosLosMeshesIluminables);
+
             meshesParaNightVision.Add(espada.mesh);
             meshesParaNightVision.Add(locket.mesh);
             meshesParaNightVision.Add(copa.mesh);
@@ -1105,7 +1105,7 @@ namespace AlumnoEjemplos.GODMODE
             device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
             device.BeginScene();
             //Dibujamos todos los meshes del escenario
-            renderizarMeshesConEfecto(meshesParaNightVision, effect, "DefaultTechnique");
+            renderizarMeshesConEfecto(todosLosMeshesIluminables, effect, "DefaultTechnique");
             bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
 
 
@@ -1113,7 +1113,7 @@ namespace AlumnoEjemplos.GODMODE
             Vector3 lightPos = camara.getPosition();
             //Normalizar direccion de la luz
             Vector3 lightDir = camara.target - camara.eye;
-            renderizarMeshes(meshesParaNightVision, lightEnable, lightPos, lightDir);
+            renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
             meshLinterna.Effect = effect;
             meshLinterna.Technique = "DefaultTechnique";
             meshVela.Effect = effect;
@@ -1144,10 +1144,41 @@ namespace AlumnoEjemplos.GODMODE
             //Render personaje brillante
             //Render personames enemigos
             enemigo.render();
-
-
+            foreach(Recarga rec in recargas)
+            {
+                if(!rec.usada)
+                {
+                    rec.mesh.Effect = effect;
+                    rec.mesh.Technique = "DefaultTechnique";
+                    rec.mesh.render();
+                }
+            }
+            if(!espada.encontrado)
+            {
+                espada.mesh.Effect = effect;
+                espada.mesh.Technique = "DefaultTechnique";
+                espada.mesh.render();
+            }
+            if (!locket.encontrado)
+            {
+                locket.mesh.Effect = effect;
+                locket.mesh.Technique = "DefaultTechnique";
+                locket.mesh.render();
+            }
+            if (!copa.encontrado)
+            {
+                copa.mesh.Effect = effect;
+                copa.mesh.Technique = "DefaultTechnique";
+                copa.mesh.render();
+            }
+            if (!llave.encontrado)
+            {
+                llave.mesh.Effect = effect;
+                llave.mesh.Technique = "DefaultTechnique";
+                llave.mesh.render();
+            }
             // El resto opacos
-            renderizarMeshesConEfecto(meshesParaNightVision, effect, "DibujarObjetosOscuros");
+            renderizarMeshesConEfecto(todosLosMeshesIluminables, effect, "DibujarObjetosOscuros");
             meshLinterna.Effect = effect;
             meshLinterna.Technique = "DibujarObjetosOscuros";
             meshVela.Effect = effect;
@@ -1263,6 +1294,7 @@ namespace AlumnoEjemplos.GODMODE
 
         private void reiniciarJuego()
         {
+            conNightVision = false;
             contadorDetecciones = 0;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
