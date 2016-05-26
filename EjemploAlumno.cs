@@ -583,6 +583,67 @@ namespace AlumnoEjemplos.GODMODE
 
                 #endregion
 
+                #region Mover Enemigo
+                if (enemigoActivo)
+                {
+                    sonidoEnemigo.play();
+                    if (!enWaypoints)
+                    {
+                        if (perdido)
+                        {
+                            tiempoBuscando -= elapsedTime;
+                            foreach (Puerta puerta in puertas)
+                            {
+                                Vector3 ptoIntersec = new Vector3();
+                                if (TgcCollisionUtils.intersectRayAABB(rayo, puerta.mesh.BoundingBox, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()) && !puerta.abierta)
+                                {
+                                    enWaypoints = true;
+                                    enemigo.irAWaypointMasCercano();
+                                }
+                            }
+                        }
+                        enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+                    }
+                    else
+                    {
+                        enemigoEsperandoPuerta = false;
+                        foreach (Puerta puerta in puertas)
+                        {
+                            Vector3 posicionPuerta = puerta.mesh.Position; posicionPuerta.Y = 0;
+                            if (Math.Abs(Vector3.Length(enemigo.getPosicion() - posicionPuerta)) < 110f && !puerta.abierta)
+                            {
+                                if (!puerta.girando)
+                                {
+                                    sonidoPuertas.play(false);
+                                    puerta.girando = true;
+                                }
+                                enemigoEsperandoPuerta = true;
+                                break;
+                            }
+                        }
+                        if (!enemigoEsperandoPuerta)
+                            enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
+                    }
+                    //Retomar waypoints por tiempo de busqueda
+                    if (!enWaypoints && tiempoBuscando <= 0)
+                    {
+                        tiempoBuscando = TIEMPO_DE_BUSQUEDA;
+                        perdido = true;
+                        enWaypoints = true;
+                        enemigo.irAWaypointMasCercano();
+                    }
+
+                    //GAME OVER
+                    /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                        {
+                            gameOver = true;
+                        }
+                        */
+                    enemigo.actualizarAnim();
+                    
+                }
+
+                #endregion
                 #region Renderizado
                 todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
@@ -602,8 +663,9 @@ namespace AlumnoEjemplos.GODMODE
                 lightDir.Normalize();
                     renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
                 //Renderizar mesh de luz
-
+                enemigo.render();
                 renderizarObjetoIluminacion(elapsedTime);
+
                 if (enLocker)
                 {
                     //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
@@ -755,67 +817,6 @@ namespace AlumnoEjemplos.GODMODE
                 locket.flotar(random, elapsedTime, 30f);
 #endregion
 
-#region Mover Enemigo
-                if (enemigoActivo)
-                {
-                    sonidoEnemigo.play();
-                    if (!enWaypoints)
-                    {
-                        if (perdido)
-                        {
-                            tiempoBuscando -= elapsedTime;
-                            foreach (Puerta puerta in puertas)
-                            {
-                                Vector3 ptoIntersec = new Vector3();
-                                if (TgcCollisionUtils.intersectRayAABB(rayo, puerta.mesh.BoundingBox, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()) && !puerta.abierta)
-                                {
-                                    enWaypoints = true;
-                                    enemigo.irAWaypointMasCercano();
-                                }
-                            }
-                        }
-                        enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
-                    }
-                    else
-                    {
-                        enemigoEsperandoPuerta = false;
-                        foreach (Puerta puerta in puertas)
-                        {
-                            Vector3 posicionPuerta = puerta.mesh.Position; posicionPuerta.Y = 0;
-                            if (Math.Abs(Vector3.Length(enemigo.getPosicion() - posicionPuerta)) < 110f && !puerta.abierta)
-                            {
-                                if (!puerta.girando)
-                                {
-                                    sonidoPuertas.play(false);
-                                    puerta.girando = true;
-                                }
-                                enemigoEsperandoPuerta = true;
-                                break;
-                            }
-                        }
-                        if (!enemigoEsperandoPuerta)
-                            enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
-                    }
-                    //Retomar waypoints por tiempo de busqueda
-                    if (!enWaypoints && tiempoBuscando <= 0)
-                    {
-                        tiempoBuscando = TIEMPO_DE_BUSQUEDA;
-                        perdido = true;
-                        enWaypoints = true;
-                        enemigo.irAWaypointMasCercano();
-                    }
-                    
-                    //GAME OVER
-                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
-                    {
-                        gameOver = true;
-                    }
-                    */
-                    enemigo.actualizarAnim();
-                    enemigo.render();
-                }
-                
-#endregion
 
 #region Contador Objetos
                 int cantidadObjetos = 0;
