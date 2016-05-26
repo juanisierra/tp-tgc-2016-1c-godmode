@@ -1396,9 +1396,9 @@ namespace AlumnoEjemplos.GODMODE
 
 
             //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
-            drawPostProcess(device);
+            drawPostProcess(device,elapsedTime);
         }
-        private void drawPostProcess(Device d3dDevice)
+        private void drawPostProcess(Device d3dDevice,float elapsedTime)
         {
             //Arrancamos la escena
             d3dDevice.BeginScene();
