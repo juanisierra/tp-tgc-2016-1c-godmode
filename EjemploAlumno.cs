@@ -754,7 +754,7 @@ namespace AlumnoEjemplos.GODMODE
                     }
 
                     //GAME OVER
-                    /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                     /*   if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
                         {
                             gameOver = true;
                         }
@@ -1436,7 +1436,11 @@ namespace AlumnoEjemplos.GODMODE
             tiempo = 0;
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
+            enemigo.indiceActual = -1;
+            enemigo.paso = 1;
             enemigoActivo = true;
+            enWaypoints = true;
+
             iteracion = 0;
             perdido = true;
             lastKnownPos = enemigo.getPosicion();
@@ -1456,6 +1460,10 @@ namespace AlumnoEjemplos.GODMODE
                 puerta.abierta = false;
                 puerta.girando = false;
                 puerta.angulo = 1.605f;
+            }
+            foreach(Recarga rec in recargas)
+            {
+                rec.usada = false;
             }
         }
 

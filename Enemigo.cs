@@ -23,8 +23,8 @@ namespace AlumnoEjemplos.GODMODE
                new Vector3(-1493.659f, 0, -21.32377f)};
         // static Vector3[] waypoints = new Vector3[] { new Vector3(-1503.234f, 0f, -20.93158f), new Vector3(-1504.088f, 0f, 377.9283f) };
         Vector3 waypointObjetivo = waypoints[0];
-        int indiceActual = -1;
-        int paso = 1;
+       public int indiceActual = -1;
+        public int paso = 1;
 
         public Vector3 getPosicion ()
         {
