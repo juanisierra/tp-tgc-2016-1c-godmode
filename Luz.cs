@@ -114,7 +114,7 @@ namespace AlumnoEjemplos.GODMODE
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));
                 mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor(Color.Yellow));
-                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.Yellow));
+                mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor(Color.White));
                 mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor(Color.Yellow));
                 mesh.Effect.SetValue("materialSpecularExp",33f);
                 mesh.render();

@@ -244,8 +244,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("perdido", perdido);
             
             GuiController.Instance.UserVars.addVar("poder", 0);
-            GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,950);
-            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 100);
+            GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,4000);
+            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 200);
             GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
             miLuz.posicionesDeLuces[1] = new Vector3(240, 60, 145.5f);
             miLuz.posicionesDeLuces[1] = new Vector3(-260, 60, -133.2f);
@@ -502,12 +502,6 @@ namespace AlumnoEjemplos.GODMODE
                     if (puerta != puertas.Last())
                     manejarPuerta(puerta);
                 }
-                /*manejarPuerta(puerta1);
-                manejarPuerta(puerta2); //Hacer foreach
-                manejarPuerta(puerta3);
-                manejarPuerta(puerta4);
-                manejarPuerta(puerta5);
-                manejarPuerta(puerta6);*/
                 if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
                 {
                     manejarPuerta(puertas.Last());
@@ -589,101 +583,53 @@ namespace AlumnoEjemplos.GODMODE
 
                 #endregion
 
-                #region Luz Linterna
+                #region Renderizado
                 todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
-                //tgcScene.setMeshesEnabled(false);
                 todosLosMeshesIluminables.AddRange(meshesExtra);
-               /* foreach(TgcMesh mesh in meshesExtra)
-                {
-                    mesh.Enabled = false;
-                }*/
+
                 foreach(Locker locker in listaLockers)
                 {
                     todosLosMeshesIluminables.Add(locker.mesh);
-                   // locker.mesh.Enabled = false;
                 }
                 bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
           
 
                 //Actualzar posición de la luz
-
                 Vector3 lightPos = camara.getPosition();
-
-
                 //Normalizar direccion de la luz
-
                 Vector3 lightDir = camara.target - camara.eye;
                 lightDir.Normalize();
-                if ((bool)GuiController.Instance.Modifiers["optimizar"])
-                {
                     renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
-                } else
-                {   foreach (TgcMesh m in todosLosMeshesIluminables)
-                    {
-                        //m.Enabled = true;
-                        if (lightEnable)
-                        {
-                            miLuz.prenderLuz(ObjetoIluminacion, m);
-                            if (ObjetoIluminacion == 0)
-                            {
-                                
-                                miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
-                                // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
-                            }
-                            else
-                            {
-                                miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
-                            }
+                //Renderizar mesh de luz
 
-                        }
-                        else
-                        {
-                            miLuz.apagarLuz(m);
-                            m.render();
-                        }
-                    }
-                }
-
-                       //Renderizar mesh de luz
-
-                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
-                var random = FastMath.Cos(6 * temblorLuz);
-                var random2 = FastMath.Cos(12 * temblorLuz);
-                meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-                meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-                meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-
-                var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
-                GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
-                if (ObjetoIluminacion == 0 && !enLocker)
+                renderizarObjetoIluminacion(elapsedTime);
+                if (enLocker)
                 {
-                    meshLinterna.render();
+                    //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
+                    GuiController.Instance.Drawer2D.beginDrawSprite();
+
+                    //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                    spriteLocker.render();
+
+                    //Finalizar el dibujado de Sprites
+                    GuiController.Instance.Drawer2D.endDrawSprite();
                 }
-                else if (ObjetoIluminacion == 1 && !enLocker)
-                {
-                    meshFarol.render();
-                }
-                else if (ObjetoIluminacion == 2 && !enLocker) 
-                {
-                    meshVela.render();
-                }
+                #endregion
 
-                GuiController.Instance.D3dDevice.Transform.View = matrizView;
 
-#endregion
 
-               /* esferaCamara.setRenderColor(Color.Aqua);
-                esferaCamara.render();
-                */
+                #region Sprite locker
 
-#region Calculos Tiempo Iluminacion
+                #endregion
+                #region Calculos Tiempo Iluminacion
 
                 tiempoIluminacion -= elapsedTime;
                 if (tiempoIluminacion <= 15)
                     tiempoIluminacion = 15;
                 tiempo += elapsedTime;
-
+                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+                var random = FastMath.Cos(6 * temblorLuz);
                 foreach (Recarga pila in recargas)
                 {
                     if (Math.Abs(Vector3.Length(camara.eye - pila.mesh.Position)) < 30f)
@@ -701,21 +647,8 @@ namespace AlumnoEjemplos.GODMODE
                     GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
                     GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
                 }
-#endregion
-#region Sprite locker
-                if (enLocker)
-                {
-                     //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
-                GuiController.Instance.Drawer2D.beginDrawSprite();
-
-                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
-                spriteLocker.render();
-
-                //Finalizar el dibujado de Sprites
-                GuiController.Instance.Drawer2D.endDrawSprite();
-                }
-#endregion
-#region Sprite de Bateria
+                #endregion
+                #region Sprite de Bateria
                 if (tiempoIluminacion <= 40)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
@@ -1024,6 +957,33 @@ namespace AlumnoEjemplos.GODMODE
                 }
             }
             return cantRenderizados;
+        }
+        private void renderizarObjetoIluminacion(float elapsedTime)
+        {
+
+            temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+            var random = FastMath.Cos(6 * temblorLuz);
+            var random2 = FastMath.Cos(12 * temblorLuz);
+            meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+
+            var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
+            GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
+            if (ObjetoIluminacion == 0 && !enLocker)
+            {
+                meshLinterna.render();
+            }
+            else if (ObjetoIluminacion == 1 && !enLocker)
+            {
+                meshFarol.render();
+            }
+            else if (ObjetoIluminacion == 2 && !enLocker)
+            {
+                meshVela.render();
+            }
+
+            GuiController.Instance.D3dDevice.Transform.View = matrizView;
         }
         static public bool hayQueRenderizarlo(TgcBoundingBox objeto)
         {
