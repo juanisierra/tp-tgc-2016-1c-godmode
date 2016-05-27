@@ -11,6 +11,10 @@ using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils._2D;
 using TgcViewer.Utils.TgcSkeletalAnimation;
 using TgcViewer.Utils.Sound;
+using System.Linq;
+using System.Windows.Forms;
+using TgcViewer.Utils;
+using TgcViewer.Utils.Shaders;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -50,64 +54,106 @@ namespace AlumnoEjemplos.GODMODE
 
         #region Variables Globales
         TgcScene tgcScene; // Crea la escena
-        List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
-        List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
-        List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
+        List<TgcBoundingBox> objetosColisionables; //Lista de esferas colisionables
+        List<TgcBoundingBox> objetosColisionablesCambiantes; //Lista de objetos que se calcula cada vez
+        List<TgcBoundingBox> todosObjetosColisionables;
+        List<TgcMesh> todosLosMeshesIluminables;
+        List<TgcMesh> meshesParaNightVision;
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
-        List<TgcMesh> meshesExtra = new List<TgcMesh>(); //Otros meshes para iluminar
+        List<TgcMesh> meshesExtra; //Otros meshes para iluminar
         TgcMesh meshLinterna, meshVela, meshFarol;
-        Luz miLuz = new Luz(); //Instancia de clase luz para la iluminacion de la linterna
+        Luz miLuz; //Instancia de clase luz para la iluminacion de la linterna
         float temblorLuz;
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         float tiempo;
         float tiempoIluminacion;
         Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
+        List<Puerta> puertas;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
-        TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
+        TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker,spriteObjetivos;
         TgcSkeletalMesh meshEnemigo;
-        Enemigo enemigo = new Enemigo();
-        Microsoft.DirectX.DirectInput.Key correr = Microsoft.DirectX.DirectInput.Key.LeftShift; //Tecla para correr
-        bool corriendo = false;
-        bool mostrarInstrucciones = false;
-        TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
-        bool perdido = true;
-        Vector3 direccionRayo = new Vector3();
-        Vector3 lastKnownPos = new Vector3();
+        Enemigo enemigo;
+        bool mostrarInstrucciones;
+        TgcRay rayo; //Rayo que conecta al enemigo con el jugador
+        bool perdido;
+        Vector3 direccionRayo;
+        Vector3 lastKnownPos;
         string animacionSeleccionada;
         float tiempoBuscando;
-        bool enemigoActivo = true;
-        bool enWaypoints = true;
-        bool enLocker = false;
+        bool enemigoActivo;
+        bool enWaypoints;
+        bool enLocker;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
         TgcStaticSound sonidoObjeto, sonidoPuertas, sonidoGrito;
         Recarga[] recargas;
         Objetivo copa, espada, locket, llave;
-        int iteracion = 0;
-        Boolean enMenu = true;
-        Boolean gameOver = false;
-        Boolean ganado = false;
+        int iteracion;
+        Boolean enMenu;
+        Boolean gameOver;
+        Boolean ganado;
         TgcText2d textoEmpezarJuego;
         TgcText2d textoDescripcion;
         TgcText2d textoGameOver;
         TgcText2d textoSpace;
         TgcText2d textoGanador;
-        TgcText2d objetosAgarrados;
-        int contadorDetecciones = 0;
+        int contadorDetecciones;
         List<Locker> listaLockers;
-        Locker locker1;
+        Locker locker1, locker2, locker3;
+        bool enemigoEsperandoPuerta;
+        Effect effect,efectoMiedo;
+        /*NightVision*/
+        Surface g_pDepthStencil;     // Depth-stencil buffer 
+        Texture g_pRenderTarget, g_pGlowMap, g_pRenderTarget4, g_pRenderTarget4Aux;
+        VertexBuffer g_pVBV3D;
+        int cant_pasadas;
+        Boolean conNightVision;
+        /*Miedo*/
+        VertexBuffer screenQuadVB;
+        Texture renderTarget2D;
+        Surface pOldRT;
         #endregion
 
         string alumnoMediaFolder;
 
         const int VELOCIDAD_ENEMIGO = 75;
-        const int VELOCIDAD_PATRULLA = 50; 
+        const int VELOCIDAD_PATRULLA = 50;
+        const float POSICION_INICIAL_ENEMIGO_X = 2135.981f;
+        const float POSICION_INICIAL_ENEMIGO_Z = -780.9791f;
+        const float TIEMPO_DE_BUSQUEDA = 15;
+        const int DELAY_FRAMES_DETECCION = 4;
+
         public override void init()
         {
-            
+            enMenu = true;
+            objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
+            objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
+            todosObjetosColisionables = new List<TgcBoundingBox>();
+            todosLosMeshesIluminables = new List<TgcMesh>();
+            meshesParaNightVision = new List<TgcMesh>();
+            meshesExtra = new List<TgcMesh>();
+            miLuz = new Luz();
+            enemigo = new Enemigo();
+            mostrarInstrucciones = false;
+            rayo = new TgcRay();
+            GuiController.Instance.CustomRenderEnabled = true;
+            perdido = true;
+            direccionRayo = new Vector3();
+            lastKnownPos = new Vector3();
+            enemigoActivo = true;
+            enWaypoints = true;
+            enLocker = false;
+            iteracion = 0;
+            enMenu = true;
+            gameOver = false;
+            ganado = false;
+            contadorDetecciones = 0;
+            enemigoEsperandoPuerta = false;
+            cant_pasadas = 3;
+            conNightVision = false;
             #region Menu
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
@@ -117,7 +163,7 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Align = TgcText2d.TextAlign.CENTER;
             textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 25, FontStyle.Bold));
             textoEmpezarJuego.Size = new Size(500, 120);
-            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), (int)FastMath.Max(screenSize.Height /2 + textoEmpezarJuego.Size.Height/0.8f, 0));
+            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height / 0.8f, 0));
 
             textoDescripcion = new TgcText2d();
             textoDescripcion.Text = "   El objetivo del juego es encontrar los tres objetos malditos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. Presiona H para ver la ayuda.";
@@ -125,15 +171,15 @@ namespace AlumnoEjemplos.GODMODE
             textoDescripcion.Color = Color.Gray;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
             textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
-            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height /2 );
-            
+            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height / 2);
+
             textoGameOver = new TgcText2d();
             textoGameOver.Text = "GAME OVER";
             textoGameOver.Color = Color.Red;
             textoGameOver.Align = TgcText2d.TextAlign.CENTER;
-            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman",60, FontStyle.Bold));
+            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman", 60, FontStyle.Bold));
             textoGameOver.Size = new Size(500, 200);
-            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height/6f, 0));
+            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 6f, 0));
 
             textoGanador = new TgcText2d();
             textoGanador.Text = "Felicitaciones, Ganaste";
@@ -142,7 +188,7 @@ namespace AlumnoEjemplos.GODMODE
             textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold));
             textoGanador.Size = new Size(500, 200);
             textoGanador.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
-            
+
             textoSpace = new TgcText2d();
             textoSpace.Text = "Presione Space para Volver al menu";
             textoSpace.Color = Color.White;
@@ -155,24 +201,24 @@ namespace AlumnoEjemplos.GODMODE
             screenSize = GuiController.Instance.Panel3d.Size;
             Size textureSize = mancha.Texture.Size;
             mancha.Scaling = new Vector2(0.6f, 0.6f);
-            mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height/2 - textureSize.Height / 4f, 0));
+            mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 4f, 0));
             titulo = new TgcSprite();
             titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
             screenSize = GuiController.Instance.Panel3d.Size;
-            textureSize =titulo.Texture.Size;
-            titulo.Scaling = new Vector2(0.7f,0.7f);
-            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width*0.7f / 2, 0), FastMath.Max(screenSize.Height/3  - textureSize.Height / 2.2f, 0));
+            textureSize = titulo.Texture.Size;
+            titulo.Scaling = new Vector2(0.7f, 0.7f);
+            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 3 - textureSize.Height / 2.2f, 0));
             instrucciones = new TgcSprite();
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
             instrucciones.Scaling = new Vector2(1f, 1f);
-            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width  / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height  / 2, 0));
+            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 2, 0));
 
 
             #endregion
 
-            tiempoBuscando = 15;
+            tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
@@ -198,6 +244,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
             tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
+
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -212,7 +259,7 @@ namespace AlumnoEjemplos.GODMODE
             }
             meshEnemigo = enemigos.loadMeshAndAnimationsFromFile(pathMesh, mediaPath, animaciones);
             meshEnemigo.playAnimation(animacionSeleccionada, true);
-            meshEnemigo.Position = new Vector3(-1503.234f, 0f, -20.93158f);
+            meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
             meshEnemigo.Scale = new Vector3(1.5f, 1.3f, 1.3f);
             meshEnemigo.rotateY(FastMath.PI / 2);
             enemigo.setMesh(meshEnemigo);
@@ -230,8 +277,15 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("lastKnown", 0);
             GuiController.Instance.UserVars.addVar("enWaypoints", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            
+
             GuiController.Instance.UserVars.addVar("poder", 0);
+            GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 10000, 4000);
+            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 200);
+            GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
+            miLuz.posicionesDeLuces[0] = new Vector3(240, 60, 145.5f);
+            miLuz.posicionesDeLuces[1] = new Vector3(-260, 60, -133.2f);
+            miLuz.posicionesDeLuces[2] = new Vector3(997, 60, -645);
+            miLuz.posicionesDeLuces[3] = new Vector3(-1314, 60, 1077);
 
 
             /* GuiController.Instance.Modifiers.addVertex3f("posPuerta", new Vector3(-151f, 1f, 549.04f), new Vector3(-11f, 1f, 749.04f), new Vector3(-51f, 1f, 649.04f));
@@ -245,29 +299,43 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-           // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
-           
+            // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
             camara.JumpSpeed = 30f;
             camara.init();
             #endregion
+
             #region Lockers
+
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = spriteLocker.Texture.Size;
-            spriteLocker.Scaling = new Vector2(1,1);
-            spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), -150);
+            spriteLocker.Scaling = new Vector2(1, 1);
+            spriteLocker.Position = new Vector2(-screenSize.Width / 1.9f, -screenSize.Height / 3f);
+            //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
 
             listaLockers = new List<Locker>();
-            locker1 = new Locker(alumnoMediaFolder, new Vector3(-152.824f, 0, -210.2993f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker1.posVista = new Vector3(-139.8626f, 50f, -168.6381f);
-            locker1.lookAt = new Vector3(-139.8736f, 50, -168.1381f);
+            locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -240f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker1.posVista = new Vector3(-225.6352f, 50f, -197.2892f);
+            locker1.lookAt = new Vector3(-225.6328f, 49.94f, -196.7892f);
             listaLockers.Add(locker1);
-            #endregion
-            #region Control de Colisiones
 
+            locker2 = new Locker(alumnoMediaFolder, new Vector3(805f, 0, -890f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker2.posVista = new Vector3(82.59220f, 50f, -853.2103f);
+            locker2.lookAt = new Vector3(820.009f, 49.97f, -850.4145f);
+            listaLockers.Add(locker2);
+
+            locker3 = new Locker(alumnoMediaFolder, new Vector3(-1170.824f, 0, 940f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker3.posVista = new Vector3(-1161.415f, 50f, 980.6960f);
+            locker3.lookAt = new Vector3(-1161.45f, 50f, 981.1906f);
+            listaLockers.Add(locker3);
+
+            #endregion
+
+            #region Control de Colisiones
             objetosColisionables.Clear(); 
                         foreach (TgcMesh mesh in tgcScene.Meshes) //Agrega una caja a cada mesh que haya en la escena
                         {
@@ -328,19 +396,16 @@ namespace AlumnoEjemplos.GODMODE
             bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
              screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = bateria.Texture.Size;
-            bateria.Scaling = new Vector2(0.6f, 0.6f);
-            bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
+            bateria.Scaling = new Vector2(0.4f, 0.4f);
+            bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 5 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
-
-            #region ContadorDeObjetos
-            objetosAgarrados = new TgcText2d();
-           objetosAgarrados.Text = "0/4";
-            objetosAgarrados.Color = Color.White;
-            objetosAgarrados.Align = TgcText2d.TextAlign.LEFT;
-            objetosAgarrados.Size = new Size(100,100);
-            objetosAgarrados.changeFont(new System.Drawing.Font("TimesNewRoman", 40, FontStyle.Bold ));
-            objetosAgarrados.Position = new Point((int) FastMath.Max(screenSize.Width / 1.3f , 0), (int) FastMath.Max(screenSize.Height/1.2f, 0));
-
+            #region Sprite Objetivos
+            spriteObjetivos = new TgcSprite();
+            spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            textureSize = spriteObjetivos.Texture.Size;
+            spriteObjetivos.Scaling = new Vector2(0.6f, 0.6f);
+            spriteObjetivos.Position = new Vector2(FastMath.Max(screenSize.Width / 2.7f, 0), FastMath.Max(screenSize.Height / 1.2f, 0));
             #endregion
 
             #region Puertas
@@ -359,6 +424,9 @@ namespace AlumnoEjemplos.GODMODE
             meshesExtra.Add(puerta6.mesh);
             meshesExtra.Add(puerta7.mesh);
 
+            puertas = new List<Puerta>();
+            puertas.Add(puerta1); puertas.Add(puerta2); puertas.Add(puerta3); puertas.Add(puerta4);
+            puertas.Add(puerta5); puertas.Add(puerta6); puertas.Add(puerta7);
             #endregion
 
             #region Inicializacion del rayo
@@ -375,14 +443,94 @@ namespace AlumnoEjemplos.GODMODE
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
             #endregion
+            #region Cargo shader nightvision
+            String compilationErrors;
+            effect = Effect.FromFile(GuiController.Instance.D3dDevice,
+                alumnoMediaFolder + "GODMODE\\Media\\Shaders\\GaussianBlur.fx",
+                null, null, ShaderFlags.PreferFlowControl, null, out compilationErrors);
+            if (effect == null)
+            {
+                throw new Exception("Error al cargar shader. Errores: " + compilationErrors);
+            }
+            //Configurar Technique dentro del shader
+            effect.Technique = "DefaultTechnique";
+            g_pDepthStencil = d3dDevice.CreateDepthStencilSurface(d3dDevice.PresentationParameters.BackBufferWidth,
+                                                                        d3dDevice.PresentationParameters.BackBufferHeight,
+                                                                        DepthFormat.D24S8,
+                                                                        MultiSampleType.None,
+                                                                        0,
+                                                                        true);
 
-            
+            // inicializo el render target
+            g_pRenderTarget = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pGlowMap = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pRenderTarget4 = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth / 4
+                    , d3dDevice.PresentationParameters.BackBufferHeight / 4, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            g_pRenderTarget4Aux = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth / 4
+                    , d3dDevice.PresentationParameters.BackBufferHeight / 4, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+            effect.SetValue("g_RenderTarget", g_pRenderTarget);
+
+            // Resolucion de pantalla
+            effect.SetValue("screen_dx", d3dDevice.PresentationParameters.BackBufferWidth);
+            effect.SetValue("screen_dy", d3dDevice.PresentationParameters.BackBufferHeight);
+
+            CustomVertex.PositionTextured[] vertices = new CustomVertex.PositionTextured[]
+            {
+                new CustomVertex.PositionTextured( -1, 1, 1, 0,0),
+                new CustomVertex.PositionTextured(1,  1, 1, 1,0),
+                new CustomVertex.PositionTextured(-1, -1, 1, 0,1),
+                new CustomVertex.PositionTextured(1,-1, 1, 1,1)
+            };
+            //vertex buffer de los triangulos
+            g_pVBV3D = new VertexBuffer(typeof(CustomVertex.PositionTextured),
+                    4, d3dDevice, Usage.Dynamic | Usage.WriteOnly,
+                        CustomVertex.PositionTextured.Format, Pool.Default);
+            g_pVBV3D.SetData(vertices, 0, LockFlags.None);
+            #endregion
+            #region Carga shader Miedo
+            CustomVertex.PositionTextured[] screenQuadVertices = new CustomVertex.PositionTextured[]
+           {
+                new CustomVertex.PositionTextured( -1, 1, 1, 0,0),
+                new CustomVertex.PositionTextured(1,  1, 1, 1,0),
+                new CustomVertex.PositionTextured(-1, -1, 1, 0,1),
+                new CustomVertex.PositionTextured(1,-1, 1, 1,1)
+           };
+            //vertex buffer de los triangulos
+            screenQuadVB = new VertexBuffer(typeof(CustomVertex.PositionTextured),
+                    4, d3dDevice, Usage.Dynamic | Usage.WriteOnly,
+                        CustomVertex.PositionTextured.Format, Pool.Default);
+            screenQuadVB.SetData(screenQuadVertices, 0, LockFlags.None);
+
+            //Creamos un Render Targer sobre el cual se va a dibujar la pantalla
+            renderTarget2D = new Texture(d3dDevice, d3dDevice.PresentationParameters.BackBufferWidth
+                    , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
+                        Format.X8R8G8B8, Pool.Default);
+
+
+            //Cargar shader con efectos de Post-Procesado
+            efectoMiedo = TgcShaders.loadEffect(alumnoMediaFolder + "GODMODE\\Media\\Shaders\\Miedo.fx");
+
+            //Configurar Technique dentro del shader
+            efectoMiedo.Technique = "OndasTechnique";
+            #endregion
         }
 
-
         // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
+
         public override void render(float elapsedTime)
-        {   
+        {
+
+            #region enMenu
             if (enMenu) {
 
                 
@@ -400,7 +548,10 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     enMenu = false;
                 }
-            } if (gameOver)
+            }
+            #endregion
+            #region Gameover 
+            if (gameOver)
             {
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
@@ -419,6 +570,9 @@ namespace AlumnoEjemplos.GODMODE
                     reiniciarJuego();
                 }
             }
+            #endregion
+            #region ganado
+
             if (ganado)
             {
                 GuiController.Instance.Drawer2D.beginDrawSprite();
@@ -439,6 +593,7 @@ namespace AlumnoEjemplos.GODMODE
                     reiniciarJuego();
                 }
             }
+            #endregion
 
             else if (!enMenu && !gameOver && !ganado) {
                 iteracion++;
@@ -451,31 +606,28 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.UserVars.setValue("enLocker", enLocker);
                 GuiController.Instance.UserVars.setValue("lookAt", camara.getLookAt());
                 #region Manejo de Puertas
-                manejarPuerta(puerta1);
-                manejarPuerta(puerta2); //Hacer foreach
-                manejarPuerta(puerta3);
-                manejarPuerta(puerta4);
-                manejarPuerta(puerta5);
-                manejarPuerta(puerta6);
-                if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
-               {
-                    manejarPuerta(puerta7);
-               }
-                if (!puerta7.abierta) //Manejo de la ultima puerta para colisiones 
+                foreach (Puerta puerta in puertas)
                 {
-                    puerta7.mesh.updateBoundingBox();
-                    puerta7.mesh.BoundingBox.transform(puerta7.mesh.Transform); //rota el bounding box
-                    objetosColisionablesCambiantes.Add(puerta7.mesh.BoundingBox);
+                    if (puerta != puertas.Last())
+                    manejarPuerta(puerta);
                 }
-
-
-                #endregion
+                if ((llave.encontrado && locket.encontrado && espada.encontrado) || iteracion == 1)
+                {
+                    manejarPuerta(puertas.Last());
+                }
+                if (!puertas.Last().abierta) //Manejo de la ultima puerta para colisiones 
+                {
+                    puertas.Last().mesh.updateBoundingBox();
+                    puertas.Last().mesh.BoundingBox.transform(puertas.Last().mesh.Transform); //rota el bounding box
+                    objetosColisionablesCambiantes.Add(puertas.Last().mesh.BoundingBox);
+                }
+#endregion
 
                 //Device de DirectX para renderizar
                 Device d3dDevice = GuiController.Instance.D3dDevice;
                 //tgcScene.renderAll(); //Renderiza la escena del TGCSceneLoader
 
-                #region Camara, Colisiones y Deteccion
+                #region Camara y Colisiones
 
                 todosObjetosColisionables.AddRange(objetosColisionables);
                 todosObjetosColisionables.AddRange(objetosColisionablesCambiantes);
@@ -485,12 +637,13 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     camara.updateCamera();
                 }
+                #endregion
 
                 #region Deteccion del jugador
-
+                
                 if (enemigoActivo)
                 {
-                    int cantColisiones = 0;
+                    bool colisionDetectada = false;
                     Vector3 origenRayo = enemigo.getPosicion();
                     origenRayo.Y = 20;
                     direccionRayo = camara.getPosition() - enemigo.getPosicion();
@@ -501,132 +654,51 @@ namespace AlumnoEjemplos.GODMODE
                     foreach (TgcBoundingBox obstaculo in todosObjetosColisionables)
                     {
                         if (TgcCollisionUtils.intersectRayAABB(rayo, obstaculo, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()))
-                            cantColisiones++;
+                        {
+                            colisionDetectada = true;
+                            break;
+                        }
                     }
 
-                    if (cantColisiones > 0 && !perdido) //Si se pierde de vista al jugador y no venia perdido, almacenar la ultima posicion conocida
+                    if (colisionDetectada && !perdido) //Indicar que se perdio al jugador al detectar colision, si no lo estaba
                     {
-                        lastKnownPos = esferaCamara.Position;
                         perdido = true;
                         contadorDetecciones = 0;
                     }
 
-                    if (cantColisiones == 0 && iteracion != 1) //En la primera iteracion no se carga bien el escenario y no funciona
+                    if (!colisionDetectada && iteracion != 1 && !enLocker) //En la primera iteracion no se carga bien el escenario y no funciona
                     {
                         contadorDetecciones++;
-                        if (contadorDetecciones == 2)
+                        if (contadorDetecciones >= DELAY_FRAMES_DETECCION && !enemigoEsperandoPuerta)
                         {
+                            lastKnownPos = esferaCamara.Position;
                             if (perdido && enWaypoints) sonidoGrito.play();
                             perdido = false; //Si se ve al jugador, indicar que se lo encontro
                             enWaypoints = false;
                             enemigoActivo = true; //RARO
-                            tiempoBuscando = 15; //Reiniciar el tiempo que nos busca si no estamos
+                            tiempoBuscando = TIEMPO_DE_BUSQUEDA; //Reiniciar el tiempo que nos busca si no estamos
                             contadorDetecciones = 0;
                         }
-                    }
-                    
+                    }                   
                 }
-                #endregion
-
                 #endregion
 
                 sonidoEnemigo.Position = esferaCamara.Position; //Actualizar posicion del origen del sonido.
-                
+
+                #region manejo de lockers
                 manejarLocker(locker1);
-                #region Luz Linterna
-                List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
-                todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
-                todosLosMeshesIluminables.AddRange(meshesExtra);
-                foreach(Locker locker in listaLockers)
-                {
-                    todosLosMeshesIluminables.Add(locker.mesh);
-                }
-                bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
-                if (lightEnable)
-                {
-                    foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                    {
-                        miLuz.prenderLuz(ObjetoIluminacion, mesh);
-                    }
-                }
-                else
-                {
-                    foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                    {
-                        miLuz.apagarLuz(mesh);
-                    }
-                }
-
-                //Actualzar posición de la luz
-
-                Vector3 lightPos = camara.getPosition();
-
-
-                //Normalizar direccion de la luz
-
-                Vector3 lightDir = camara.target - camara.eye;
-                lightDir.Normalize();
-
-                //Renderizar meshes
-                foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                {
-                    if (lightEnable)
-                    {
-                        if (ObjetoIluminacion == 0)
-                        { miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh,  70f*(tiempoIluminacion/100), temblorLuz);
-                           // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
-                        }
-                        else
-                        {
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 37f * (tiempoIluminacion / 100), temblorLuz);
-                        }
-
-                    } else
-                    {
-                        mesh.render();
-                    }
-                }
-
-
-                //Renderizar mesh de luz
-
-                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
-                var random = FastMath.Cos(6 * temblorLuz);
-                var random2 = FastMath.Cos(12 * temblorLuz);
-                meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-                meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-                meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
-
-                var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
-                GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
-                if (ObjetoIluminacion == 0)
-                {
-                    meshLinterna.render();
-                }
-                else if (ObjetoIluminacion == 1)
-                {
-                    meshFarol.render();
-                }
-                else if (ObjetoIluminacion == 2)
-                {
-                    meshVela.render();
-                }
-
-                GuiController.Instance.D3dDevice.Transform.View = matrizView;
+                manejarLocker(locker2);
+                manejarLocker(locker3);
 
                 #endregion
-
-               /* esferaCamara.setRenderColor(Color.Aqua);
-                esferaCamara.render();
-                */
-
                 #region Calculos Tiempo Iluminacion
 
                 tiempoIluminacion -= elapsedTime;
                 if (tiempoIluminacion <= 15)
                     tiempoIluminacion = 15;
                 tiempo += elapsedTime;
-
+                //temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz, ya se suma en otro lado
+                var random = FastMath.Cos(6 * temblorLuz);
                 foreach (Recarga pila in recargas)
                 {
                     if (Math.Abs(Vector3.Length(camara.eye - pila.mesh.Position)) < 30f)
@@ -640,25 +712,148 @@ namespace AlumnoEjemplos.GODMODE
                         tiempoIluminacion = 100f;
 
                     }
-                    pila.flotar(random, elapsedTime);
+                    pila.flotar(random, elapsedTime,conNightVision);
                     GuiController.Instance.UserVars.setValue("posicion", camara.getPosition());
                     GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
                 }
                 #endregion
-                #region Sprite locker
+                #region Mover Enemigo
+                if (enemigoActivo)
+                {
+                    sonidoEnemigo.play();
+                    if (!enWaypoints)
+                    {
+                        if (perdido)
+                        {
+                            tiempoBuscando -= elapsedTime;
+                            foreach (Puerta puerta in puertas)
+                            {
+                                Vector3 ptoIntersec = new Vector3();
+                                if (TgcCollisionUtils.intersectRayAABB(rayo, puerta.mesh.BoundingBox, out ptoIntersec) && (direccionRayo.Length() > (rayo.Origin - ptoIntersec).Length()) && !puerta.abierta)
+                                {
+                                    enWaypoints = true;
+                                    enemigo.irAWaypointMasCercano();
+                                }
+                            }
+                        }
+                        enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
+                    }
+                    else
+                    {
+                        enemigoEsperandoPuerta = false;
+                        foreach (Puerta puerta in puertas)
+                        {
+                            Vector3 posicionPuerta = puerta.mesh.Position; posicionPuerta.Y = 0;
+                            if (Math.Abs(Vector3.Length(enemigo.getPosicion() - posicionPuerta)) < 110f && !puerta.abierta)
+                            {
+                                if (!puerta.girando)
+                                {
+                                    sonidoPuertas.play(false);
+                                    puerta.girando = true;
+                                }
+                                enemigoEsperandoPuerta = true;
+                                break;
+                            }
+                        }
+                        if (!enemigoEsperandoPuerta)
+                            enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
+                    }
+                    //Retomar waypoints por tiempo de busqueda
+                    if (!enWaypoints && tiempoBuscando <= 0)
+                    {
+                        tiempoBuscando = TIEMPO_DE_BUSQUEDA;
+                        perdido = true;
+                        enWaypoints = true;
+                        enemigo.irAWaypointMasCercano();
+                    }
+
+                    //GAME OVER
+                     /*   if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                        {
+                            gameOver = true;
+                        }
+                        */
+                    enemigo.actualizarAnim();
+                    
+                }
+
+                #endregion
+                #region Manejo de Objetos a Buscar
+                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
+                {
+                    if (!copa.encontrado) sonidoObjeto.play(false);
+                    copa.encontrado = true;
+                    ganado = true;
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
+                {
+                    if (!espada.encontrado) sonidoObjeto.play(false);
+                    /* if ((!enemigoActivo) && (!espada.encontrado))
+                     {
+                         ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
+                     }*/
+                    espada.encontrado = true;
+
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
+                {
+                    if (!locket.encontrado) sonidoObjeto.play(false);
+                    locket.encontrado = true;
+                }
+                if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
+                {
+                    if (!llave.encontrado) sonidoObjeto.play(false);
+                    llave.encontrado = true;
+                }
+                llave.flotar(random, elapsedTime, 40f,conNightVision);
+                espada.flotar(random, elapsedTime, 10f, conNightVision);
+                copa.flotar(random, elapsedTime, 30f, conNightVision);
+                locket.flotar(random, elapsedTime, 30f, conNightVision);
+                #endregion
+                #region Renderizado
+                todosLosMeshesIluminables.Clear();
+                todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
+                todosLosMeshesIluminables.AddRange(meshesExtra);
+
+                foreach(Locker locker in listaLockers)
+                {
+                    todosLosMeshesIluminables.Add(locker.mesh);
+                }
+                bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+          
+
+                //Actualzar posición de la luz
+                Vector3 lightPos = camara.getPosition();
+                //Normalizar direccion de la luz
+                Vector3 lightDir = camara.target - camara.eye;
+                lightDir.Normalize();
+                if (!conNightVision && tiempoIluminacion!=15)
+                {
+                    renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
+                    //Renderizar mesh de luz
+                    enemigo.render();
+                    renderizarObjetoIluminacion(elapsedTime);
+
+                } else if(conNightVision)
+                {
+                    renderizarNightVision(elapsedTime);
+                } else if(!conNightVision && tiempoIluminacion == 15){
+                    renderizarMiedo(elapsedTime);
+                }
                 if (enLocker)
                 {
-                     //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
-                GuiController.Instance.Drawer2D.beginDrawSprite();
+                    //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
+                    GuiController.Instance.Drawer2D.beginDrawSprite();
 
-                //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
-                spriteLocker.render();
+                    //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
+                    spriteLocker.render();
 
-                //Finalizar el dibujado de Sprites
-                GuiController.Instance.Drawer2D.endDrawSprite();
+                    //Finalizar el dibujado de Sprites
+                    GuiController.Instance.Drawer2D.endDrawSprite();
                 }
                 #endregion
-                #region Sprite de Bateria
+
+                #region Sprites
                 if (tiempoIluminacion <= 40)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
@@ -675,17 +870,42 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
                 }
+                if(!llave.encontrado && !locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
+                } else if(!llave.encontrado && ! locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\1.png");
+                } else if(llave.encontrado && !locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\2.png");
+                } else if(!llave.encontrado && locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\3.png");
+                } else if (llave.encontrado && locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\4.png");
+                } else if(llave.encontrado && !locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\5.png");
+                } else if (!llave.encontrado && locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\6.png");
+                } else if(llave.encontrado && locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\7.png");
+                }
                 //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
                 //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
                 bateria.render();
-
+                spriteObjetivos.render();
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
-                #endregion
+#endregion
 
-                #region Ejemplo de input teclado
+#region Ejemplo de input teclado
                 ///////////////INPUT//////////////////
 
 
@@ -701,6 +921,10 @@ namespace AlumnoEjemplos.GODMODE
                 if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.D3))
                 {
                     ObjetoIluminacion = 2;
+                }
+                if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.R))
+                {
+                    conNightVision = !conNightVision;
                 }
 
 
@@ -729,93 +953,9 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     ponerEnemigo(new Vector3(1615f, 0f, -525f));
                 }
-                */               
+                */
                 #endregion
 
-                #region Manejo de Objetos a Buscar
-                if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
-                {
-                    if (!copa.encontrado) sonidoObjeto.play(false);
-                    copa.encontrado = true;
-                    ganado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - espada.mesh.Position)) < 50f)
-                {
-                    if (!espada.encontrado) sonidoObjeto.play(false);
-                    if ((!enemigoActivo) && (!espada.encontrado))
-                    {
-                        ponerEnemigo(new Vector3(489.047f, 0f, 843.8695f)); //PONER ENEMIGO
-                    }
-                    espada.encontrado = true;
-                    
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - locket.mesh.Position)) < 40f)
-                {
-                    if (!locket.encontrado) sonidoObjeto.play(false);
-                    locket.encontrado = true;
-                }
-                if (Math.Abs(Vector3.Length(camara.eye - llave.mesh.Position)) < 40f)
-                {
-                    if (!llave.encontrado) sonidoObjeto.play(false);
-                    llave.encontrado = true;
-                }
-                llave.flotar(random, elapsedTime, 40f);
-                espada.flotar(random, elapsedTime, 10f);
-                copa.flotar(random, elapsedTime, 30f);
-                locket.flotar(random, elapsedTime, 30f);
-                #endregion
-
-                #region Mover Enemigo
-                if (enemigoActivo)
-                {
-                    sonidoEnemigo.play();
-                    if (Math.Abs(Vector3.Length(esferaCamara.Position - enemigo.getPosicion())) < 700f && !perdido )
-                    {
-                        enemigo.perseguir(esferaCamara.Position, VELOCIDAD_ENEMIGO * elapsedTime);
-                    }
-                    else
-                    {
-                        if (!enWaypoints)
-                        {
-                            enemigo.perseguir(lastKnownPos, VELOCIDAD_ENEMIGO * elapsedTime);
-                            tiempoBuscando -= elapsedTime;
-                            lastKnownPos.Y = 0;
-                        }
-                        else {
-                            enemigo.seguirWaypoints(VELOCIDAD_PATRULLA * elapsedTime);
-                        }
-                    }
-                    //Ocultar enemigo
-                    if (!enWaypoints && tiempoBuscando <= 0)
-                    {
-                        tiempoBuscando = 15;
-                        perdido = true;
-                        enWaypoints = true;
-                        enemigo.moverAUltimoWaypoint();
-                    }
-                    
-                    //GAME OVER
-                /*    if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
-                    {
-                        gameOver = true;
-                    }
-                    */
-                    enemigo.actualizarAnim();
-                    enemigo.render();
-                }
-                
-                #endregion
-
-                #region Contador Objetos
-                int cantidadObjetos = 0;
-                if (llave.encontrado) cantidadObjetos++;
-                if (locket.encontrado) cantidadObjetos++;
-                if (espada.encontrado) cantidadObjetos++;
-                objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
-                objetosAgarrados.render();
-                #endregion
-                
-                
             }
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.H))
             {
@@ -831,37 +971,55 @@ namespace AlumnoEjemplos.GODMODE
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
             }
+            GuiController.Instance.Text3d.drawText("FPS: " + HighResolutionTimer.Instance.FramesPerSecond, 0, 0, Color.Yellow);
         }
 
         public override void close()
         {
+            camara.updateCamera();
+            camara.LockCam = false;
             tgcScene.disposeAll();
-            sonidoEnemigo.dispose();
-            sonidoPilas.dispose();
-            enemigo.getMesh().dispose();
-            for (int i = 0; i < 4; i++)
-                recargas[i].dispose();
+             esferaCamara.dispose();
+            sonidoEnemigo.dispose(); sonidoGrito.dispose(); sonidoPilas.dispose(); sonidoObjeto.dispose(); sonidoPuertas.dispose();
+            enemigo.dispose();
+            meshLinterna.dispose(); meshFarol.dispose(); meshVela.dispose();
+            espada.mesh.dispose(); locket.mesh.dispose(); copa.mesh.dispose(); llave.mesh.dispose();
+            for (int i = 0; i < 4; i++) recargas[i].dispose();
+            foreach (Puerta puerta in puertas) puerta.mesh.dispose();
+            puertas.Clear();
+             meshesExtra.Clear();
+            foreach (Locker locker in listaLockers) locker.mesh.dispose();
+            listaLockers.Clear();
+            
+            todosLosMeshesIluminables.Clear();
+              objetosColisionables.Clear();
+             objetosColisionablesCambiantes.Clear();
+             todosObjetosColisionables.Clear();
         }
 
         private void manejarPuerta(Puerta puerta)
-         {
-             if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
-             {
-                sonidoPuertas.play(false);
-                 puerta.girando = true;
-                 esperandoPuerta = true;
-             }
-             puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
+        {
+            if (Math.Abs(Vector3.Length(camara.eye - (puerta.mesh.Position + (new Vector3(0f, 50f, 0f))))) < 130f && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.E)) //Sumo el vector para compensar la altura
+            {
+                if (!puerta.girando)
+                {
+                    sonidoPuertas.play(false);
+                    puerta.girando = true;
+                    esperandoPuerta = true;
+                }
+            }
+            puerta.actualizarPuerta(GuiController.Instance.ElapsedTime);
             if (!puerta.abierta)
             {
                 puerta.mesh.updateBoundingBox();
                 puerta.mesh.BoundingBox.transform(puerta.mesh.Transform); //rota el bounding box
                 objetosColisionablesCambiantes.Add(puerta.mesh.BoundingBox);
             }
-         }
+        }
+
         private void manejarLocker(Locker locker)
         {
-            if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F)) //Sumo el vector para compensar la altura
+            if (Math.Abs(Vector3.Length(camara.eye - (locker.getPos() + (new Vector3(0f, 50f, 0f))))) < 100f && !enLocker && GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F) && perdido) //Sumo el vector para compensar la altura
             {
                 enLocker = true;
                 locker.adentro = true;
@@ -885,59 +1043,460 @@ namespace AlumnoEjemplos.GODMODE
 
         private void ponerEnemigo(Vector3 posicion)
         {   if (!enemigoActivo)
-            {
+          {
                 enemigo.position(posicion); //PONER ENEMIGO
                 lastKnownPos = enemigo.getPosicion();
                 enemigoActivo = true;
                 //sonidoGrito.play(); //Opcional: grita cuando aparece, aunque no vea al jugador
             }
         }
+        private int renderizarMeshes(List<TgcMesh> meshes, bool lightEnable, Vector3 lightPos, Vector3 lightDir)
+        {
+            int cantRenderizados = 0;
+            foreach (TgcMesh m in meshes)
+            {
 
+                //Solo mostrar la malla si colisiona contra el Frustum
+
+                if (hayQueRenderizarlo(m.BoundingBox))
+                {
+                   // m.Enabled = true;
+                    if (lightEnable)
+                    {
+                        miLuz.prenderLuz(ObjetoIluminacion, m);
+                        if (ObjetoIluminacion == 0)
+                        {
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
+                            // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
+                        }
+                        else
+                        {
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
+                        }
+                        
+                    }
+                    else
+                    {
+                        miLuz.apagarLuz(m);
+                        m.render();
+                    }
+                    cantRenderizados++;
+                    //m.Enabled = false;
+                }
+            }
+            return cantRenderizados;
+        }
+        private int renderizarMeshesConEfecto(List<TgcMesh> meshes,Effect effect, String technique)
+        {
+            int cantRenderizados = 0;
+            foreach (TgcMesh m in meshes)
+            {   
+                
+                //Solo mostrar la malla si colisiona contra el Frustum
+
+                if (hayQueRenderizarlo(m.BoundingBox))
+                {
+                   m.Effect = effect;
+                m.Technique = technique;
+                    m.render();
+                    cantRenderizados++;
+                }
+            }
+            return cantRenderizados;
+        }
+        private void renderizarObjetoIluminacion(float elapsedTime)
+        {
+
+            temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+            var random = FastMath.Cos(6 * temblorLuz);
+            var random2 = FastMath.Cos(12 * temblorLuz);
+            meshLinterna.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshVela.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+            meshFarol.Rotation = new Vector3(Geometry.DegreeToRadian(-5f + random2), Geometry.DegreeToRadian(90f + random), Geometry.DegreeToRadian(-5f));
+
+            var matrizView = GuiController.Instance.D3dDevice.Transform.View; //Al aplanar la matriz renderiza el mesh en la misma posicion siempre respecto a la camara
+            GuiController.Instance.D3dDevice.Transform.View = Matrix.Identity;
+            if (ObjetoIluminacion == 0 && !enLocker)
+            {
+                meshLinterna.render();
+            }
+            else if (ObjetoIluminacion == 1 && !enLocker)
+            {
+                meshFarol.render();
+            }
+            else if (ObjetoIluminacion == 2 && !enLocker)
+            {
+                meshVela.render();
+            }
+
+            GuiController.Instance.D3dDevice.Transform.View = matrizView;
+        }
+        private void renderizarNightVision(float elapsedTime)
+        {
+
+            meshesParaNightVision.Clear();
+
+            meshesParaNightVision.Add(espada.mesh);
+            meshesParaNightVision.Add(locket.mesh);
+            meshesParaNightVision.Add(copa.mesh);
+            meshesParaNightVision.Add(llave.mesh);
+            foreach (Recarga recarga in recargas)
+            {
+                meshesParaNightVision.Add(recarga.mesh);
+            }
+            Device device = GuiController.Instance.D3dDevice;
+            Control panel3d = GuiController.Instance.Panel3d;
+            float aspectRatio = (float)panel3d.Width / (float)panel3d.Height;
+
+            // dibujo la escena una textura 
+            effect.Technique = "DefaultTechnique";
+            // guardo el Render target anterior y seteo la textura como render target
+            Surface pOldRT = device.GetRenderTarget(0);
+            Surface pSurf = g_pRenderTarget.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            // hago lo mismo con el depthbuffer, necesito el que no tiene multisampling
+            Surface pOldDS = device.DepthStencilSurface;
+            device.DepthStencilSurface = g_pDepthStencil;
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            device.BeginScene();
+            //Dibujamos todos los meshes del escenario
+            renderizarMeshesConEfecto(todosLosMeshesIluminables, effect, "DefaultTechnique");
+            bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+
+
+            //Actualzar posición de la luz
+            Vector3 lightPos = camara.getPosition();
+            //Normalizar direccion de la luz
+            Vector3 lightDir = camara.target - camara.eye;
+            renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
+            meshLinterna.Effect = effect;
+            meshLinterna.Technique = "DefaultTechnique";
+            meshVela.Effect = effect;
+            meshVela.Technique = "DefaultTechnique";
+            meshFarol.Effect = effect;
+            meshFarol.Technique = "DefaultTechnique";
+            renderizarObjetoIluminacion(elapsedTime);
+            meshLinterna.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshLinterna.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshLinterna.RenderType);
+            meshVela.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshVela.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshVela.RenderType);
+            meshFarol.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshFarol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshFarol.RenderType);
+            //Render personames enemigos
+            enemigo.render();
+            device.EndScene();
+            pSurf.Dispose();
+
+
+            // dibujo el glow map
+            effect.Technique = "DefaultTechnique";
+            pSurf = g_pGlowMap.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            device.BeginScene();
+
+            //Dibujamos SOLO los meshes que tienen glow brillantes
+            //Render personaje brillante
+            //Render personames enemigos
+            enemigo.render();
+            foreach(Recarga rec in recargas)
+            {
+                if(!rec.usada)
+                {
+                    rec.mesh.Effect = effect;
+                    rec.mesh.Technique = "DefaultTechnique";
+                    rec.mesh.render();
+                }
+            }
+            if(!espada.encontrado)
+            {
+                espada.mesh.Effect = effect;
+                espada.mesh.Technique = "DefaultTechnique";
+                espada.mesh.render();
+            }
+            if (!locket.encontrado)
+            {
+                locket.mesh.Effect = effect;
+                locket.mesh.Technique = "DefaultTechnique";
+                locket.mesh.render();
+            }
+            if (!copa.encontrado)
+            {
+                copa.mesh.Effect = effect;
+                copa.mesh.Technique = "DefaultTechnique";
+                copa.mesh.render();
+            }
+            if (!llave.encontrado)
+            {
+                llave.mesh.Effect = effect;
+                llave.mesh.Technique = "DefaultTechnique";
+                llave.mesh.render();
+            }
+            // El resto opacos
+            renderizarMeshesConEfecto(todosLosMeshesIluminables, effect, "DibujarObjetosOscuros");
+            meshLinterna.Effect = effect;
+            meshLinterna.Technique = "DibujarObjetosOscuros";
+            meshVela.Effect = effect;
+            meshVela.Technique = "DibujarObjetosOscuros";
+            meshFarol.Effect = effect;
+            meshFarol.Technique = "DibujarObjetosOscuros";
+            renderizarObjetoIluminacion(elapsedTime);
+            meshLinterna.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshLinterna.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshLinterna.RenderType);
+            meshVela.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshVela.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshVela.RenderType);
+            meshFarol.Effect = GuiController.Instance.Shaders.TgcMeshShader;
+            meshFarol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(meshFarol.RenderType);
+            device.EndScene();
+            pSurf.Dispose();
+
+            // Hago un blur sobre el glow map
+            // 1er pasada: downfilter x 4
+            // -----------------------------------------------------
+            pSurf = g_pRenderTarget4.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.BeginScene();
+            effect.Technique = "DownFilter4";
+            device.VertexFormat = CustomVertex.PositionTextured.Format;
+            device.SetStreamSource(0, g_pVBV3D, 0);
+            effect.SetValue("g_RenderTarget", g_pGlowMap);
+
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            effect.Begin(FX.None);
+            effect.BeginPass(0);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect.EndPass();
+            effect.End();
+            pSurf.Dispose();
+            device.EndScene();
+            device.DepthStencilSurface = pOldDS;
+
+            // Pasadas de blur
+            for (int P = 0; P < cant_pasadas; ++P)
+            {
+                // Gaussian blur Horizontal
+                // -----------------------------------------------------
+                pSurf = g_pRenderTarget4Aux.GetSurfaceLevel(0);
+                device.SetRenderTarget(0, pSurf);
+                // dibujo el quad pp dicho :
+                device.BeginScene();
+                effect.Technique = "GaussianBlurSeparable";
+                device.VertexFormat = CustomVertex.PositionTextured.Format;
+                device.SetStreamSource(0, g_pVBV3D, 0);
+                effect.SetValue("g_RenderTarget", g_pRenderTarget4);
+
+                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+                effect.Begin(FX.None);
+                effect.BeginPass(0);
+                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+                effect.EndPass();
+                effect.End();
+                pSurf.Dispose();
+                device.EndScene();
+
+                pSurf = g_pRenderTarget4.GetSurfaceLevel(0);
+                device.SetRenderTarget(0, pSurf);
+                pSurf.Dispose();
+
+                //  Gaussian blur Vertical
+                // -----------------------------------------------------
+                device.BeginScene();
+                effect.Technique = "GaussianBlurSeparable";
+                device.VertexFormat = CustomVertex.PositionTextured.Format;
+                device.SetStreamSource(0, g_pVBV3D, 0);
+                effect.SetValue("g_RenderTarget", g_pRenderTarget4Aux);
+
+                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+                effect.Begin(FX.None);
+                effect.BeginPass(1);
+                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+                effect.EndPass();
+                effect.End();
+                device.EndScene();
+
+            }
+
+
+            //  To Gray Scale
+            // -----------------------------------------------------
+            // Ultima pasada vertical va sobre la pantalla pp dicha
+            device.SetRenderTarget(0, pOldRT);
+            //pSurf = g_pRenderTarget4Aux.GetSurfaceLevel(0);
+            //device.SetRenderTarget(0, pSurf);
+
+            device.BeginScene();
+            effect.Technique = "GrayScale";
+            device.VertexFormat = CustomVertex.PositionTextured.Format;
+            device.SetStreamSource(0, g_pVBV3D, 0);
+            effect.SetValue("g_RenderTarget", g_pRenderTarget);
+            effect.SetValue("g_GlowMap", g_pRenderTarget4Aux);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            effect.Begin(FX.None);
+            effect.BeginPass(0);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect.EndPass();
+            effect.End();
+
+
+            device.EndScene();
+        
+    }
+        static public bool hayQueRenderizarlo(TgcBoundingBox objeto)
+        {
+            TgcCollisionUtils.FrustumResult r = TgcCollisionUtils.classifyFrustumAABB(GuiController.Instance.Frustum, objeto);
+            return (r != TgcCollisionUtils.FrustumResult.OUTSIDE);
+        }
+        void renderizarMiedo(float elapsedTime)
+        {
+            Device device  = GuiController.Instance.D3dDevice;
+            //Cargamos el Render Targer al cual se va a dibujar la escena 3D. Antes nos guardamos el surface original
+            //En vez de dibujar a la pantalla, dibujamos a un buffer auxiliar, nuestro Render Target.
+            pOldRT = device.GetRenderTarget(0);
+            Surface pSurf = renderTarget2D.GetSurfaceLevel(0);
+            device.SetRenderTarget(0, pSurf);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+
+
+            //Dibujamos la escena comun, pero en vez de a la pantalla al Render Target
+            device.BeginScene();
+
+
+            //Tambien hay que dibujar el indicador de los ejes cartesianos
+            GuiController.Instance.AxisLines.render();
+            bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+
+
+            //Actualzar posición de la luz
+            Vector3 lightPos = camara.getPosition();
+            //Normalizar direccion de la luz
+            Vector3 lightDir = camara.target - camara.eye;
+            lightDir.Normalize();
+            //Dibujamos todos los meshes del escenario
+            renderizarMeshes(todosLosMeshesIluminables, lightEnable, lightPos, lightDir);
+            enemigo.render();
+            renderizarObjetoIluminacion(elapsedTime);
+            foreach (Recarga rec in recargas)
+            {
+                if (!rec.usada)
+                {
+                    
+                    rec.mesh.render();
+                }
+            }
+            if (!espada.encontrado)
+            {
+                espada.mesh.render();
+            }
+            if (!locket.encontrado)
+            {
+               
+                locket.mesh.render();
+            }
+            if (!copa.encontrado)
+            {
+                
+                copa.mesh.render();
+            }
+            if (!llave.encontrado)
+            {
+                
+                llave.mesh.render();
+            }
+            //Terminamos manualmente el renderizado de esta escena. Esto manda todo a dibujar al GPU al Render Target que cargamos antes
+            device.EndScene();
+
+            //Liberar memoria de surface de Render Target
+            pSurf.Dispose();
+
+            //Si quisieramos ver que se dibujo, podemos guardar el resultado a una textura en un archivo para debugear su resultado (ojo, es lento)
+            //TextureLoader.Save(GuiController.Instance.ExamplesMediaDir + "Shaders\\render_target.bmp", ImageFileFormat.Bmp, renderTarget2D);
+
+
+            //Ahora volvemos a restaurar el Render Target original (osea dibujar a la pantalla)
+            device.SetRenderTarget(0, pOldRT);
+
+
+            //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
+            drawPostProcess(device,elapsedTime);
+        }
+        private void drawPostProcess(Device d3dDevice,float elapsedTime)
+        {
+            //Arrancamos la escena
+            d3dDevice.BeginScene();
+
+            //Cargamos para renderizar el unico modelo que tenemos, un Quad que ocupa toda la pantalla, con la textura de todo lo dibujado antes
+            d3dDevice.VertexFormat = CustomVertex.PositionTextured.Format;
+            d3dDevice.SetStreamSource(0, screenQuadVB, 0);
+
+            efectoMiedo.Technique = "OndasTechnique";
+
+            //Cargamos parametros en el shader de Post-Procesado
+            efectoMiedo.SetValue("render_target2D", renderTarget2D);
+            efectoMiedo.SetValue("tiempo", tiempo);
+            efectoMiedo.SetValue("ondas_size", 0.02f);
+
+
+            //Limiamos la pantalla y ejecutamos el render del shader
+            d3dDevice.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
+            efectoMiedo.Begin(FX.None);
+            efectoMiedo.BeginPass(0);
+            d3dDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            efectoMiedo.EndPass();
+            efectoMiedo.End();
+
+            //Terminamos el renderizado de la escena
+            d3dDevice.EndScene();
+        }
         private void reiniciarJuego()
         {
+            enMenu = true;
+            mostrarInstrucciones = false;
+            GuiController.Instance.CustomRenderEnabled = true;
+            perdido = true;
+            enemigoActivo = true;
+            enWaypoints = true;
+            enLocker = false;
+            iteracion = 0;
+            enMenu = true;
+            gameOver = false;
+            ganado = false;
+            contadorDetecciones = 0;
+            enemigoEsperandoPuerta = false;
+            cant_pasadas = 3;
+            conNightVision = false;
             contadorDetecciones = 0;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
             tiempoIluminacion = 100;
             tiempo = 0;
-            tiempoBuscando = 15;
-            meshEnemigo.Position = new Vector3(500, 0, 0);
-            enemigoActivo = false;
-            iteracion = 0;
-            perdido = true;
+            tiempoBuscando = TIEMPO_DE_BUSQUEDA;
+            meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
+            enemigo.indiceActual = -1;
+            enemigo.paso = 1;
+            enemigoActivo = true;
+            enWaypoints = true;
             lastKnownPos = enemigo.getPosicion();
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
             esferaCamara.setCenter(camara.getPosition());
-            #region Inicializacion del rayo
+#region Inicializacion del rayo
             direccionRayo = camara.getPosition() - enemigo.getPosicion();
             rayo.Origin = enemigo.getPosicion();
             rayo.Direction = direccionRayo;
-            #endregion
+#endregion
             copa.encontrado = false;
             locket.encontrado = false;
             espada.encontrado = false;
             llave.encontrado = false;
-            puerta1.abierta = false;
-            puerta1.girando = false;
-            puerta1.angulo = 1.605f;
-            puerta2.abierta = false;
-            puerta2.angulo = 1.605f;
-            puerta2.girando = false;
-            puerta3.abierta = false;
-            puerta3.angulo = 1.605f;
-            puerta3.girando = false;
-            puerta4.abierta = false;
-            puerta4.angulo = 1.605f;
-            puerta4.girando = false;
-            puerta5.abierta = false;
-            puerta5.angulo = 1.605f;
-            puerta5.girando = false;
-            puerta6.abierta = false;
-            puerta6.angulo = 1.605f;
-            puerta6.girando = false;
-            puerta7.abierta = false;
-            puerta7.angulo = 1.605f;
-            puerta7.girando = false;
+            foreach(Puerta puerta in puertas)
+            {
+                puerta.abierta = false;
+                puerta.girando = false;
+                puerta.angulo = 1.605f;
+            }
+            foreach(Recarga rec in recargas)
+            {
+                rec.usada = false;
+            }
         }
 
     }

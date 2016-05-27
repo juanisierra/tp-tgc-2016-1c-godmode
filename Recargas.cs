@@ -27,10 +27,10 @@ namespace AlumnoEjemplos.GODMODE
             mesh.Position = posicion;
         }
 
-        public void flotar(float random,float elapsedTime)
+        public void flotar(float random,float elapsedTime,Boolean noRender)
         {
             mesh.Position = new Vector3(mesh.Position.X, 30f + random, mesh.Position.Z);
-            if (!usada)
+            if (!usada && !noRender)
             {
                 mesh.render();
             } else

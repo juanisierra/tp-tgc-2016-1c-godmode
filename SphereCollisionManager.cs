@@ -20,6 +20,7 @@ namespace AlumnoEjemplos.GODMODE
     public class SphereCollisionManager
     {
         const float EPSILON = 0.005f;
+            //0.05f;
 
         private Vector3 gravityForce;
         /// <summary>

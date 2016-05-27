@@ -58,7 +58,7 @@ namespace AlumnoEjemplos.GODMODE
         {
             collisionManager = new SphereCollisionManager();
             collisionManager.GravityEnabled = false;
-            collisionManager.SlideFactor = 1.5f;
+            collisionManager.SlideFactor = 5.6f;
         }
 
 
