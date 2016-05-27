@@ -54,17 +54,17 @@ namespace AlumnoEjemplos.GODMODE
 
         #region Variables Globales
         TgcScene tgcScene; // Crea la escena
-        List<TgcBoundingBox> objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
-        List<TgcBoundingBox> objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
-        List<TgcBoundingBox> todosObjetosColisionables = new List<TgcBoundingBox>();
-        List<TgcMesh> todosLosMeshesIluminables = new List<TgcMesh>();
-        List<TgcMesh> meshesParaNightVision = new List<TgcMesh>();
+        List<TgcBoundingBox> objetosColisionables; //Lista de esferas colisionables
+        List<TgcBoundingBox> objetosColisionablesCambiantes; //Lista de objetos que se calcula cada vez
+        List<TgcBoundingBox> todosObjetosColisionables;
+        List<TgcMesh> todosLosMeshesIluminables;
+        List<TgcMesh> meshesParaNightVision;
         Camara camara;
         TgcBoundingSphere esferaCamara; //Esfera que rodea a la camara
         TgcScene linterna, vela, farol;
-        List<TgcMesh> meshesExtra = new List<TgcMesh>(); //Otros meshes para iluminar
+        List<TgcMesh> meshesExtra; //Otros meshes para iluminar
         TgcMesh meshLinterna, meshVela, meshFarol;
-        Luz miLuz = new Luz(); //Instancia de clase luz para la iluminacion de la linterna
+        Luz miLuz; //Instancia de clase luz para la iluminacion de la linterna
         float temblorLuz;
         int ObjetoIluminacion; //0 linterna 1 farol 2 vela
         float tiempo;
@@ -74,45 +74,45 @@ namespace AlumnoEjemplos.GODMODE
         public static Boolean esperandoPuerta; //si esta en true no se mueve
         TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
         TgcSkeletalMesh meshEnemigo;
-        Enemigo enemigo = new Enemigo();
-        bool mostrarInstrucciones = false;
-        TgcRay rayo = new TgcRay(); //Rayo que conecta al enemigo con el jugador
-        bool perdido = true;
-        Vector3 direccionRayo = new Vector3();
-        Vector3 lastKnownPos = new Vector3();
+        Enemigo enemigo;
+        bool mostrarInstrucciones;
+        TgcRay rayo; //Rayo que conecta al enemigo con el jugador
+        bool perdido;
+        Vector3 direccionRayo;
+        Vector3 lastKnownPos;
         string animacionSeleccionada;
         float tiempoBuscando;
-        bool enemigoActivo = true;
-        bool enWaypoints = true;
-        bool enLocker = false;
+        bool enemigoActivo;
+        bool enWaypoints;
+        bool enLocker;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
         TgcStaticSound sonidoPilas;
         TgcStaticSound sonidoObjeto, sonidoPuertas, sonidoGrito;
         Recarga[] recargas;
         Objetivo copa, espada, locket, llave;
-        int iteracion = 0;
-        Boolean enMenu = true;
-        Boolean gameOver = false;
-        Boolean ganado = false;
+        int iteracion;
+        Boolean enMenu;
+        Boolean gameOver;
+        Boolean ganado;
         TgcText2d textoEmpezarJuego;
         TgcText2d textoDescripcion;
         TgcText2d textoGameOver;
         TgcText2d textoSpace;
         TgcText2d textoGanador;
         TgcText2d objetosAgarrados;
-        int contadorDetecciones = 0;
+        int contadorDetecciones;
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3;
         TgcBox pruebaLuz;
-        bool enemigoEsperandoPuerta = false;
+        bool enemigoEsperandoPuerta;
         Effect effect,efectoMiedo;
         /*NightVision*/
         Surface g_pDepthStencil;     // Depth-stencil buffer 
         Texture g_pRenderTarget, g_pGlowMap, g_pRenderTarget4, g_pRenderTarget4Aux;
         VertexBuffer g_pVBV3D;
-        int cant_pasadas = 3;
-        Boolean conNightVision = false;
+        int cant_pasadas;
+        Boolean conNightVision;
         /*Miedo*/
         VertexBuffer screenQuadVB;
         Texture renderTarget2D;
@@ -129,11 +129,34 @@ namespace AlumnoEjemplos.GODMODE
         const int DELAY_FRAMES_DETECCION = 4;
 
         public override void init()
-        {
+        {   
+            enMenu = true;
+             objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
+            objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
+            todosObjetosColisionables = new List<TgcBoundingBox>();
+            todosLosMeshesIluminables = new List<TgcMesh>();
+            meshesParaNightVision = new List<TgcMesh>();
+            meshesExtra = new List<TgcMesh>();
+            miLuz = new Luz();
+            enemigo = new Enemigo();
+            mostrarInstrucciones = false;
+            rayo = new TgcRay();
             GuiController.Instance.CustomRenderEnabled = true;
-
+            perdido = true;
+           direccionRayo = new Vector3();
+           lastKnownPos = new Vector3();
+            enemigoActivo = true;
+            enWaypoints = true;
+            enLocker = false;
+           iteracion = 0;
+            enMenu = true;
+            gameOver = false;
+            ganado = false;
+            contadorDetecciones = 0;
+            enemigoEsperandoPuerta = false;
             pruebaLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
-
+            cant_pasadas = 3;
+            conNightVision = false;
             #region Menu
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
@@ -950,30 +973,25 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void close()
         {
+            camara.updateCamera();
+            camara.LockCam = false;
             tgcScene.disposeAll();
-           /* esferaCamara.dispose();
-            camara.characterSphere.dispose();
+             esferaCamara.dispose();
             sonidoEnemigo.dispose(); sonidoGrito.dispose(); sonidoPilas.dispose(); sonidoObjeto.dispose(); sonidoPuertas.dispose();
             enemigo.dispose();
             meshLinterna.dispose(); meshFarol.dispose(); meshVela.dispose();
-            locker1.mesh.dispose(); locker2.mesh.dispose(); locker3.mesh.dispose();
             espada.mesh.dispose(); locket.mesh.dispose(); copa.mesh.dispose(); llave.mesh.dispose();
-            for (int i = 0; i < 4; i++)
-                recargas[i].dispose();
-            foreach (Puerta puerta in puertas)
-                puerta.mesh.dispose(); puertas.Clear();
-            foreach (TgcMesh mesh in meshesExtra)
-                mesh.dispose(); meshesExtra.Clear();
-            foreach (Locker locker in listaLockers)
-                locker.mesh.dispose(); listaLockers.Clear();
-            foreach (TgcMesh mesh in todosLosMeshesIluminables)
-                mesh.dispose(); todosLosMeshesIluminables.Clear();
-            foreach (TgcBoundingBox bb in objetosColisionables)
-                bb.dispose(); objetosColisionables.Clear();
-            foreach (TgcBoundingBox bb in objetosColisionablesCambiantes)
-                bb.dispose(); objetosColisionablesCambiantes.Clear();
-            foreach (TgcBoundingBox bb in todosObjetosColisionables)
-                bb.dispose(); todosObjetosColisionables.Clear();*/
+            for (int i = 0; i < 4; i++) recargas[i].dispose();
+            foreach (Puerta puerta in puertas) puerta.mesh.dispose();
+            puertas.Clear();
+             meshesExtra.Clear();
+            foreach (Locker locker in listaLockers) locker.mesh.dispose();
+            listaLockers.Clear();
+            
+            todosLosMeshesIluminables.Clear();
+              objetosColisionables.Clear();
+             objetosColisionablesCambiantes.Clear();
+             todosObjetosColisionables.Clear();
         }
 
         private void manejarPuerta(Puerta puerta)
@@ -1431,6 +1449,20 @@ namespace AlumnoEjemplos.GODMODE
         }
         private void reiniciarJuego()
         {
+            enMenu = true;
+            mostrarInstrucciones = false;
+            GuiController.Instance.CustomRenderEnabled = true;
+            perdido = true;
+            enemigoActivo = true;
+            enWaypoints = true;
+            enLocker = false;
+            iteracion = 0;
+            enMenu = true;
+            gameOver = false;
+            ganado = false;
+            contadorDetecciones = 0;
+            enemigoEsperandoPuerta = false;
+            cant_pasadas = 3;
             conNightVision = false;
             contadorDetecciones = 0;
             esperandoPuerta = false;
@@ -1443,9 +1475,6 @@ namespace AlumnoEjemplos.GODMODE
             enemigo.paso = 1;
             enemigoActivo = true;
             enWaypoints = true;
-
-            iteracion = 0;
-            perdido = true;
             lastKnownPos = enemigo.getPosicion();
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
             esferaCamara.setCenter(camara.getPosition());
