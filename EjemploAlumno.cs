@@ -103,7 +103,6 @@ namespace AlumnoEjemplos.GODMODE
         int contadorDetecciones;
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3;
-        TgcBox pruebaLuz;
         bool enemigoEsperandoPuerta;
         Effect effect,efectoMiedo;
         /*NightVision*/
@@ -128,9 +127,9 @@ namespace AlumnoEjemplos.GODMODE
         const int DELAY_FRAMES_DETECCION = 4;
 
         public override void init()
-        {   
+        {
             enMenu = true;
-             objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
+            objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
             objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
             todosObjetosColisionables = new List<TgcBoundingBox>();
             todosLosMeshesIluminables = new List<TgcMesh>();
@@ -142,18 +141,17 @@ namespace AlumnoEjemplos.GODMODE
             rayo = new TgcRay();
             GuiController.Instance.CustomRenderEnabled = true;
             perdido = true;
-           direccionRayo = new Vector3();
-           lastKnownPos = new Vector3();
+            direccionRayo = new Vector3();
+            lastKnownPos = new Vector3();
             enemigoActivo = true;
             enWaypoints = true;
             enLocker = false;
-           iteracion = 0;
+            iteracion = 0;
             enMenu = true;
             gameOver = false;
             ganado = false;
             contadorDetecciones = 0;
             enemigoEsperandoPuerta = false;
-            pruebaLuz = TgcBox.fromSize(new Vector3(10, 10, 10), Color.White);
             cant_pasadas = 3;
             conNightVision = false;
             #region Menu
@@ -165,7 +163,7 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Align = TgcText2d.TextAlign.CENTER;
             textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 25, FontStyle.Bold));
             textoEmpezarJuego.Size = new Size(500, 120);
-            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 -textoEmpezarJuego.Size.Width/2  , 0), (int)FastMath.Max(screenSize.Height /2 + textoEmpezarJuego.Size.Height/0.8f, 0));
+            textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height / 0.8f, 0));
 
             textoDescripcion = new TgcText2d();
             textoDescripcion.Text = "   El objetivo del juego es encontrar los tres objetos malditos distribuídos por los distintos sectores del mapa. Sólo así se podrá atravesar la puerta final, en busca del objeto más preciado. Pero cuidado, habrá varios obstáculos en tu camino que deberás superar. Presiona H para ver la ayuda.";
@@ -173,15 +171,15 @@ namespace AlumnoEjemplos.GODMODE
             textoDescripcion.Color = Color.Gray;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
             textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
-            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height /2 );
-            
+            textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height / 2);
+
             textoGameOver = new TgcText2d();
             textoGameOver.Text = "GAME OVER";
             textoGameOver.Color = Color.Red;
             textoGameOver.Align = TgcText2d.TextAlign.CENTER;
-            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman",60, FontStyle.Bold));
+            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman", 60, FontStyle.Bold));
             textoGameOver.Size = new Size(500, 200);
-            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width/2 , 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height/6f, 0));
+            textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 6f, 0));
 
             textoGanador = new TgcText2d();
             textoGanador.Text = "Felicitaciones, Ganaste";
@@ -190,7 +188,7 @@ namespace AlumnoEjemplos.GODMODE
             textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold));
             textoGanador.Size = new Size(500, 200);
             textoGanador.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
-            
+
             textoSpace = new TgcText2d();
             textoSpace.Text = "Presione Space para Volver al menu";
             textoSpace.Color = Color.White;
@@ -203,23 +201,23 @@ namespace AlumnoEjemplos.GODMODE
             screenSize = GuiController.Instance.Panel3d.Size;
             Size textureSize = mancha.Texture.Size;
             mancha.Scaling = new Vector2(0.6f, 0.6f);
-            mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height/2 - textureSize.Height / 4f, 0));
+            mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 4f, 0));
             titulo = new TgcSprite();
             titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
             screenSize = GuiController.Instance.Panel3d.Size;
-            textureSize =titulo.Texture.Size;
-            titulo.Scaling = new Vector2(0.7f,0.7f);
-            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width*0.7f / 2, 0), FastMath.Max(screenSize.Height/3  - textureSize.Height / 2.2f, 0));
+            textureSize = titulo.Texture.Size;
+            titulo.Scaling = new Vector2(0.7f, 0.7f);
+            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 3 - textureSize.Height / 2.2f, 0));
             instrucciones = new TgcSprite();
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
             instrucciones.Scaling = new Vector2(1f, 1f);
-            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width  / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height  / 2, 0));
+            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 2, 0));
 
 
             #endregion
- 
+
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             esperandoPuerta = false;
             //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
@@ -246,7 +244,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
             tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
-            
+
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -279,12 +277,12 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("lastKnown", 0);
             GuiController.Instance.UserVars.addVar("enWaypoints", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-            
+
             GuiController.Instance.UserVars.addVar("poder", 0);
-            GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,4000);
+            GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 10000, 4000);
             GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 200);
             GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
-            miLuz.posicionesDeLuces[1] = new Vector3(240, 60, 145.5f);
+            miLuz.posicionesDeLuces[0] = new Vector3(240, 60, 145.5f);
             miLuz.posicionesDeLuces[1] = new Vector3(-260, 60, -133.2f);
             miLuz.posicionesDeLuces[2] = new Vector3(997, 60, -645);
             miLuz.posicionesDeLuces[3] = new Vector3(-1314, 60, 1077);
@@ -301,8 +299,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
-           // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
-           
+            // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+
             camara.MovementSpeed = 100f;
             camara.RotationSpeed = 2f;
             camara.JumpSpeed = 30f;
@@ -310,13 +308,13 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Lockers
-            
+
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = spriteLocker.Texture.Size;
-            spriteLocker.Scaling = new Vector2(1,1);
-            spriteLocker.Position = new Vector2(-screenSize.Width /1.9f, -screenSize.Height / 3f);
+            spriteLocker.Scaling = new Vector2(1, 1);
+            spriteLocker.Position = new Vector2(-screenSize.Width / 1.9f, -screenSize.Height / 3f);
             //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
 
             listaLockers = new List<Locker>();
@@ -338,7 +336,6 @@ namespace AlumnoEjemplos.GODMODE
             #endregion
 
             #region Control de Colisiones
-
             objetosColisionables.Clear(); 
                         foreach (TgcMesh mesh in tgcScene.Meshes) //Agrega una caja a cada mesh que haya en la escena
                         {
@@ -532,9 +529,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void render(float elapsedTime)
         {
-            miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
-            pruebaLuz.Position = (Vector3)GuiController.Instance.Modifiers["posicionS"];
-            pruebaLuz.render();
+
             #region enMenu
             if (enMenu) {
 
@@ -702,7 +697,7 @@ namespace AlumnoEjemplos.GODMODE
                 if (tiempoIluminacion <= 15)
                     tiempoIluminacion = 15;
                 tiempo += elapsedTime;
-                temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz
+                //temblorLuz = temblorLuz + elapsedTime; //Calcula movimientos del mesh de luz, ya se suma en otro lado
                 var random = FastMath.Cos(6 * temblorLuz);
                 foreach (Recarga pila in recargas)
                 {
