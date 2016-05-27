@@ -243,7 +243,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            tiempoIluminacion = 15; // 60 segundos * 3 = 3 minutos
+            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
 
             #endregion
 
@@ -1360,9 +1360,6 @@ namespace AlumnoEjemplos.GODMODE
             //Dibujamos la escena comun, pero en vez de a la pantalla al Render Target
             device.BeginScene();
 
-
-            //Como estamos en modo CustomRenderEnabled, tenemos que dibujar todo nosotros, incluso el contador de FPS
-            GuiController.Instance.Text3d.drawText("FPS: " + HighResolutionTimer.Instance.FramesPerSecond, 0, 0, Color.Yellow);
 
             //Tambien hay que dibujar el indicador de los ejes cartesianos
             GuiController.Instance.AxisLines.render();
