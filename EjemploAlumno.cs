@@ -72,7 +72,7 @@ namespace AlumnoEjemplos.GODMODE
         Puerta puerta1, puerta2, puerta3, puerta4, puerta5, puerta6, puerta7;
         List<Puerta> puertas;
         public static Boolean esperandoPuerta; //si esta en true no se mueve
-        TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker;
+        TgcSprite bateria, titulo, mancha, instrucciones,spriteLocker,spriteObjetivos;
         TgcSkeletalMesh meshEnemigo;
         Enemigo enemigo;
         bool mostrarInstrucciones;
@@ -100,7 +100,6 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoGameOver;
         TgcText2d textoSpace;
         TgcText2d textoGanador;
-        TgcText2d objetosAgarrados;
         int contadorDetecciones;
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3;
@@ -400,19 +399,16 @@ namespace AlumnoEjemplos.GODMODE
             bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
              screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = bateria.Texture.Size;
-            bateria.Scaling = new Vector2(0.6f, 0.6f);
-            bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
+            bateria.Scaling = new Vector2(0.4f, 0.4f);
+            bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 5 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
-
-            #region ContadorDeObjetos
-            objetosAgarrados = new TgcText2d();
-           objetosAgarrados.Text = "0/4";
-            objetosAgarrados.Color = Color.White;
-            objetosAgarrados.Align = TgcText2d.TextAlign.LEFT;
-            objetosAgarrados.Size = new Size(100,100);
-            objetosAgarrados.changeFont(new System.Drawing.Font("TimesNewRoman", 40, FontStyle.Bold ));
-            objetosAgarrados.Position = new Point((int) FastMath.Max(screenSize.Width / 1.3f , 0), (int) FastMath.Max(screenSize.Height/1.2f, 0));
-
+            #region Sprite Objetivos
+            spriteObjetivos = new TgcSprite();
+            spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
+            screenSize = GuiController.Instance.Panel3d.Size;
+            textureSize = spriteObjetivos.Texture.Size;
+            spriteObjetivos.Scaling = new Vector2(0.6f, 0.6f);
+            spriteObjetivos.Position = new Vector2(FastMath.Max(screenSize.Width / 2.7f, 0), FastMath.Max(screenSize.Height / 1.2f, 0));
             #endregion
 
             #region Puertas
@@ -862,7 +858,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
                 #endregion
 
-                #region Sprite de Bateria
+                #region Sprites
                 if (tiempoIluminacion <= 40)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
@@ -879,12 +875,37 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
                 }
+                if(!llave.encontrado && !locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
+                } else if(!llave.encontrado && ! locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\1.png");
+                } else if(llave.encontrado && !locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\2.png");
+                } else if(!llave.encontrado && locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\3.png");
+                } else if (llave.encontrado && locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\4.png");
+                } else if(llave.encontrado && !locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\5.png");
+                } else if (!llave.encontrado && locket.encontrado && !espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\6.png");
+                } else if(llave.encontrado && locket.encontrado && espada.encontrado)
+                {
+                    spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\7.png");
+                }
                 //Iniciar dibujado de todos los Sprites de la escena (en este caso es solo uno)
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
                 //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
                 bateria.render();
-
+                spriteObjetivos.render();
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
 #endregion
@@ -940,19 +961,6 @@ namespace AlumnoEjemplos.GODMODE
                 */
                 #endregion
 
-               
-
-
-#region Contador Objetos
-                int cantidadObjetos = 0;
-                if (llave.encontrado) cantidadObjetos++;
-                if (locket.encontrado) cantidadObjetos++;
-                if (espada.encontrado) cantidadObjetos++;
-                objetosAgarrados.Text = String.Concat(cantidadObjetos.ToString(),"/3");
-                objetosAgarrados.render();
-#endregion
-                
-                
             }
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.H))
             {
