@@ -243,7 +243,7 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
+            tiempoIluminacion = 15; // 60 segundos * 3 = 3 minutos
 
             #endregion
 
@@ -1435,8 +1435,8 @@ namespace AlumnoEjemplos.GODMODE
 
             //Cargamos parametros en el shader de Post-Procesado
             efectoMiedo.SetValue("render_target2D", renderTarget2D);
-            efectoMiedo.SetValue("ondas_vertical_length", 60);
-            efectoMiedo.SetValue("ondas_size", 0.01f);
+            efectoMiedo.SetValue("tiempo", tiempo);
+            efectoMiedo.SetValue("ondas_size", 0.02f);
 
 
             //Limiamos la pantalla y ejecutamos el render del shader

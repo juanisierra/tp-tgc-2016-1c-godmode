@@ -74,15 +74,15 @@ technique DefaultTechnique
    }
 }
 
-float ondas_vertical_length;
+float tiempo;
 float ondas_size;
 
 //Pixel Shader de Ondas
 float4 ps_ondas( PS_INPUT_DEFAULT Input ) : COLOR0
 {     
 	//Alterar coordenadas de textura
-	Input.Texcoord.y = Input.Texcoord.y + ( sin( Input.Texcoord.x * ondas_vertical_length ) * ondas_size);
-	
+	Input.Texcoord.y = Input.Texcoord.y + ( sin( Input.Texcoord.x + tiempo ) * ondas_size);
+Input.Texcoord.x = Input.Texcoord.x + (sin(Input.Texcoord.y + tiempo ) * ondas_size);
 	//Obtener color de textura
 	float4 color = tex2D( RenderTarget, Input.Texcoord );
 	return color;
