@@ -57,7 +57,7 @@ float spotLightExponent; //Exponente de atenuacion dentro del cono de luz
 
 //Shadow Map*********************************************************************
 #define SMAP_SIZE 1024
-#define EPSILON 0.05f
+#define EPSILON 1
 
 float time = 0;
 
@@ -285,7 +285,7 @@ float4 ps_VertexColor(PS_INPUT_VERTEX_COLOR input) : COLOR0
 		K = I;
 	}
 	float4 color_base = finalColor;
-	color_base.rgb *= 0.5 + 0.5*K;
+	color_base.rgb *=0.5 + 0.5*K;
 	//****************
 	return color_base;
 }

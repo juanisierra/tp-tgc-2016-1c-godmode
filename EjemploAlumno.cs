@@ -239,7 +239,7 @@ namespace AlumnoEjemplos.GODMODE
             //Modifiers de la luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
             GuiController.Instance.Modifiers.addBoolean("optimizar", "optimizar", true);
-            GuiController.Instance.Modifiers.addVertex3f("posVista", new Vector3(-20f, 49f, -20f), new Vector3(20f, 51f, 20f), new Vector3(0, 50, 0));
+            GuiController.Instance.Modifiers.addVertex3f("posVista", new Vector3(-500f, -10f,-500f), new Vector3(500f, 51f, 500f), new Vector3(-245f, 0, -240f));
             //Modifiers para desplazamiento del personaje
             GuiController.Instance.UserVars.addVar("posicion");
             GuiController.Instance.UserVars.addVar("lookAt");
@@ -252,6 +252,7 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.Modifiers.addFloat("lightIntensity",0,10000,950);
             GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 100);
             GuiController.Instance.Modifiers.addVertex3f("posicionS", new Vector3(-300, 0, -50), new Vector3(300, 100, 500), new Vector3(-140, 50, 246.74f));
+            GuiController.Instance.Modifiers.addVertex3f("lookSomb", new Vector3(-1000, -50, -1000), new Vector3(50, 50, 1000), new Vector3(0, 0, 0));
             miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
             miLuz.posicionesDeLuces[1] = new Vector3(-150, 55, 252.5f);
             miLuz.posicionesDeLuces[2] = new Vector3(1000, 1000, 1000);
@@ -451,6 +452,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void render(float elapsedTime)
         {
+            locker1.mover((Vector3)GuiController.Instance.Modifiers["posVista"]);
             miLuz.posicionesDeLuces[0] = (Vector3)GuiController.Instance.Modifiers["posicionS"];
             pruebaLuz.Position = (Vector3)GuiController.Instance.Modifiers["posicionS"];
             pruebaLuz.render();
@@ -627,8 +629,9 @@ namespace AlumnoEjemplos.GODMODE
                 // Shadow maps:
                 Device device = GuiController.Instance.D3dDevice;
                 Control panel3d = GuiController.Instance.Panel3d;
-                g_LightPos = camara.getPosition();
-                g_LightDir = camara.target - camara.eye;
+                g_LightPos = (Vector3)GuiController.Instance.Modifiers["posicionS"];
+           
+                g_LightDir = (Vector3)GuiController.Instance.Modifiers["lookSomb"];
                 g_LightDir.Normalize();
                 device.EndScene();      // termino el thread anterior
 

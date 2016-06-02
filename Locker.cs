@@ -40,6 +40,10 @@ namespace AlumnoEjemplos.GODMODE
         {
             return mesh.Position;
         }
+        public void mover(Vector3 pos)
+        {
+            mesh.Position = pos;
+        }
     
     }
 }
