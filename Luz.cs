@@ -9,6 +9,7 @@ using Microsoft.DirectX;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.Shaders;
+using System.Windows.Forms;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -17,25 +18,55 @@ namespace AlumnoEjemplos.GODMODE
        public Vector3[] posicionesDeLuces = new Vector3[4];
         Effect godmodeSpotlightMultiDiffuse = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\SpotlightMultiDifuse.fx");
         Effect godmodePointLightMultiDiffuse = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\PointLightMultiDifuse.fx");
+        Effect godmodeTextureProyection = TgcShaders.loadEffect(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Shaders\\TextureProyection.fx");
         ColorValue[] lightColors = new ColorValue[5];
         Vector4[] pointLightPositions = new Vector4[5];
         float[] pointLightIntensity = new float[5];
         float[] pointLightAttenuation = new float[5];
-          
-            
-    public void prenderLuz(int tipo, TgcMesh mesh)
+        // Shadow map
+        readonly int SHADOWMAP_SIZE = 1024;
+        Texture g_pShadowMap;    // Texture to which the shadow map is rendered
+        Texture miTex;
+        Surface g_pDSShadow;     // Depth-stencil buffer for rendering to shadow map
+        Matrix g_mShadowProj;    // Projection matrix for shadow map
+        Vector3 g_LightPos;						// posicion de la luz actual (la que estoy analizando)
+        Vector3 g_LightDir;						// direccion de la luz actual
+        Matrix g_LightView;						// matriz de view del light
+        float near_plane = 2f;
+        float far_plane = 1500f;
+        public Luz()
+        {   
+            miTex = TextureLoader.FromFile(GuiController.Instance.D3dDevice, GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\proy.png");
+            Control panel3d = GuiController.Instance.Panel3d;
+            float aspectRatio = (float)panel3d.Width / (float)panel3d.Height;
+            g_mShadowProj = Matrix.PerspectiveFovLH(Geometry.DegreeToRadian(80),
+                aspectRatio, 2, 1500);
+            GuiController.Instance.D3dDevice.Transform.Projection =
+                Matrix.PerspectiveFovLH(Geometry.DegreeToRadian(45.0f),
+                aspectRatio, near_plane, far_plane);
+
+
+        }
+
+        public void prenderLuz(int tipo, TgcMesh mesh)
         {
             Effect currentShader;
-            
+
             if (tipo == 0)
             {
                 currentShader = godmodeSpotlightMultiDiffuse;
                 mesh.Effect = currentShader;
-            } else if(tipo == 1 || tipo ==2)
+            }
+            else if (tipo == 1)
+            {
+                currentShader = godmodeTextureProyection;
+                mesh.Effect = currentShader;
+            }
+            else if (tipo == 2)
             {
                 currentShader = godmodePointLightMultiDiffuse;
                 mesh.Effect = currentShader;
-            }
+            } 
             
             //El Technique depende del tipo RenderType del mesh
             mesh.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(mesh.RenderType);
@@ -48,6 +79,11 @@ namespace AlumnoEjemplos.GODMODE
         }
         public void renderizarLuz(int tipo, Vector3 posicionCamara, Vector3 direccionDeLuz, TgcMesh mesh, float intensidad,float temblor)
         {
+            g_LightPos = posicionCamara;
+            //g_LightDir = direccionDeLuz - g_LightPos;
+            g_LightDir = direccionDeLuz;
+            g_LightDir.Normalize();
+
             var random = FastMath.Cos(6 * temblor);
 
             //Actualzar posición de la luz
@@ -92,7 +128,17 @@ namespace AlumnoEjemplos.GODMODE
                 mesh.render();
             }
             else if (tipo == 1)
-            {
+            {    // Calculo la matriz de view de la luz
+
+                //mesh.Effect.SetValue("g_vLightPos", new Vector4(g_LightPos.X, g_LightPos.Y, g_LightPos.Z, 1));
+                mesh.Effect.SetValue("g_vLightPos", new Vector4(posicionCamara.X, posicionCamara.Y, posicionCamara.Z, 1));
+                //mesh.Effect.SetValue("g_vLightDir", new Vector4(g_LightDir.X, g_LightDir.Y, g_LightDir.Z, 1));
+                mesh.Effect.SetValue("g_vLightDir", new Vector4(g_LightDir.X, g_LightDir.Y, g_LightDir.Z, 1));
+                mesh.Effect.SetValue("texProy", miTex);
+                g_LightView = Matrix.LookAtLH(g_LightPos, g_LightPos + g_LightDir, new Vector3(0, 0, 1));
+                // inicializacion standard: 
+                //mesh.Effect.SetValue("g_mProjLight", g_mShadowProj);
+                mesh.Effect.SetValue("g_mViewLightProj", g_LightView * g_mShadowProj);
                 lightColors[0] = ColorValue.FromColor(Color.Yellow);
                 pointLightPositions[0] = TgcParserUtils.vector3ToVector4(lightPos);
                 pointLightIntensity[0] = intensidad; //POR 2??    
