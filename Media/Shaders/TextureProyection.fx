@@ -16,7 +16,6 @@ float4x4 matWorld; //Matriz de transformacion World
 float4x4 matWorldView; //Matriz World * View
 float4x4 matWorldViewProj; //Matriz World * View * Projection
 float4x4 matInverseTransposeWorld; //Matriz Transpose(Invert(World))
-
 //Textura para DiffuseMap
 texture texDiffuseMap;
 sampler2D diffuseMap = sampler_state
@@ -32,8 +31,10 @@ texture texProy;
 sampler2D texProyection = sampler_state
 {
 	Texture = (texProy);
-	ADDRESSU = WRAP;
-	ADDRESSV = WRAP;
+	
+	ADDRESSU = BORDER;
+	ADDRESSV = BORDER;
+	BorderColor = float4(1.0f, 1.0f, 1.0f, 0.0f);
 	MINFILTER = LINEAR;
 	MAGFILTER = LINEAR;
 	MIPFILTER = LINEAR;
@@ -253,7 +254,7 @@ VS_OUTPUT_DIFFUSE_MAP vs_DiffuseMap(VS_INPUT_DIFFUSE_MAP input)
 
 	//HalfAngleVec (H): vector de reflexion simplificado de Phong-Blinn (H = |V + L|). Usado en Specular
 	output.HalfAngleVec = viewVector + output.LightVec;
-	output.vPosLight = mul(output.WorldPosition, g_mViewLightProj);
+	output.vPosLight = mul(input.Position, matWorldView);
 	return output;
 }
 
@@ -261,6 +262,7 @@ VS_OUTPUT_DIFFUSE_MAP vs_DiffuseMap(VS_INPUT_DIFFUSE_MAP input)
 //Input del Pixel Shader
 struct PS_DIFFUSE_MAP
 {
+	float4 Position: POSITION;
 	float2 Texcoord : TEXCOORD0;
 	float3 WorldPosition : TEXCOORD1;
 	float3 WorldNormal : TEXCOORD2;
@@ -318,16 +320,17 @@ float4 ps_DiffuseMap(PS_DIFFUSE_MAP input) : COLOR0
 	diffuseLighting += diffuseLight;
 	float4 finalColor = float4(saturate(materialEmissiveColor + ambientLight + diffuseLighting) * texelColor + specularLight, materialDiffuseColor.a);
 	float4 colorListo = finalColor;
-	if (cono > 0.9)
-	{
-		float2 CT = 0.5 * input.vPosLight.xy / input.vPosLight.w + float2(0.5, 0.5);
+	/*if (cono > 0.9)
+	{*/
+		float2 CT = 0.01 * input.vPosLight.xy / input.vPosLight.w + float2(0.5, 0.5);
 		
 		CT.y = 1.0f - CT.y;
 		float4 colorSombra = tex2D(texProyection, CT);
+		
 		//color_base.rgb = colorSombra.rgb;
-		colorListo = finalColor*0.5+0.5*colorSombra;
-
-	}
+		//colorListo = finalColor*0.5+0.5*colorSombra;
+		colorListo = (colorSombra*colorSombra.a + finalColor*(1-colorSombra.a));
+	//}
 	return colorListo;
 }
 
@@ -337,9 +340,9 @@ float4 ps_DiffuseMap(PS_DIFFUSE_MAP input) : COLOR0
 * Technique DIFFUSE_MAP
 */
 technique DIFFUSE_MAP
-{
+{	
    pass Pass_0
-   {
+   {	
 	  VertexShader = compile vs_3_0 vs_DiffuseMap();
 	  PixelShader = compile ps_3_0 ps_DiffuseMap();
    }
