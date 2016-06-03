@@ -44,6 +44,9 @@ texture render_target2D;
 sampler RenderTarget = sampler_state
 {
     Texture = (render_target2D);
+	ADDRESSU = CLAMP;
+	ADDRESSV = CLAMP;
+	BorderColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
     MipFilter = NONE;
     MinFilter = NONE;
     MagFilter = NONE;

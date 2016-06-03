@@ -326,10 +326,10 @@ float4 ps_DiffuseMap(PS_DIFFUSE_MAP input) : COLOR0
 		
 		CT.y = 1.0f - CT.y;
 		float4 colorSombra = tex2D(texProyection, CT);
-		
+		colorSombra.rgb *= lightIntensity[0] / 100;
 		//color_base.rgb = colorSombra.rgb;
 		//colorListo = finalColor*0.5+0.5*colorSombra;
-		colorListo = (colorSombra*colorSombra.a + finalColor*(1-colorSombra.a));
+		colorListo = (colorSombra*colorSombra.a+ finalColor*(1-colorSombra.a));
 	//}
 	return colorListo;
 }
