@@ -102,7 +102,7 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoGanador;
         int contadorDetecciones;
         List<Locker> listaLockers;
-        Locker locker1, locker2, locker3;
+        Locker locker1, locker2, locker3, locker4, locker5;
         bool enemigoEsperandoPuerta;
         Effect effect,efectoMiedo;
         /*NightVision*/
@@ -318,14 +318,14 @@ namespace AlumnoEjemplos.GODMODE
             //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
 
             listaLockers = new List<Locker>();
-            locker1 = new Locker(alumnoMediaFolder, new Vector3(-245f, 0, -240f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker1.posVista = new Vector3(-225.6352f, 50f, -197.2892f);
-            locker1.lookAt = new Vector3(-225.6328f, 49.94f, -196.7892f);
+            locker1 = new Locker(alumnoMediaFolder, new Vector3(214f, 0, -240f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker1.posVista = new Vector3(193.7315f, 50f, -189.9574f);
+            locker1.lookAt = new Vector3(193.675f, 50f, -189.4574f);
             listaLockers.Add(locker1);
 
             locker2 = new Locker(alumnoMediaFolder, new Vector3(805f, 0, -890f), new Vector3(0.4f, 0.17f, 0.4f));
-            locker2.posVista = new Vector3(82.59220f, 50f, -853.2103f);
-            locker2.lookAt = new Vector3(820.009f, 49.97f, -850.4145f);
+            locker2.posVista = new Vector3(823.6697f, 50f, -829.9934f);
+            locker2.lookAt = new Vector3(823.8191f, 49.97f, -829.4934f);
             listaLockers.Add(locker2);
 
             locker3 = new Locker(alumnoMediaFolder, new Vector3(-1170.824f, 0, 940f), new Vector3(0.4f, 0.17f, 0.4f));
@@ -333,6 +333,15 @@ namespace AlumnoEjemplos.GODMODE
             locker3.lookAt = new Vector3(-1161.45f, 50f, 981.1906f);
             listaLockers.Add(locker3);
 
+            locker4 = new Locker(alumnoMediaFolder, new Vector3(-5f, 0, -929f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker4.posVista = new Vector3(-7.00997f, 50f, -762.6996f);
+            locker4.lookAt = new Vector3(-7.00255f, 50f, -762.1996f);
+            listaLockers.Add(locker4);
+
+            locker5 = new Locker(alumnoMediaFolder, new Vector3(-249f, 0, 664f), new Vector3(0.4f, 0.17f, 0.4f));
+            locker5.posVista = new Vector3(-229.3327f,50, 724.005f);
+            locker5.lookAt = new Vector3(-229.2234f, 50f, 724.505f);
+            listaLockers.Add(locker5);
             #endregion
 
             #region Control de Colisiones
@@ -399,6 +408,7 @@ namespace AlumnoEjemplos.GODMODE
             bateria.Scaling = new Vector2(0.4f, 0.4f);
             bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 5 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
+            
             #region Sprite Objetivos
             spriteObjetivos = new TgcSprite();
             spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
@@ -443,6 +453,7 @@ namespace AlumnoEjemplos.GODMODE
             locket.mesh.rotateY(-0.7f);
             espada.mesh.rotateZ(1f);
             #endregion
+
             #region Cargo shader nightvision
             String compilationErrors;
             effect = Effect.FromFile(GuiController.Instance.D3dDevice,
@@ -497,6 +508,7 @@ namespace AlumnoEjemplos.GODMODE
                         CustomVertex.PositionTextured.Format, Pool.Default);
             g_pVBV3D.SetData(vertices, 0, LockFlags.None);
             #endregion
+            
             #region Carga shader Miedo
             CustomVertex.PositionTextured[] screenQuadVertices = new CustomVertex.PositionTextured[]
            {
@@ -550,6 +562,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
             }
             #endregion
+            
             #region Gameover 
             if (gameOver)
             {
@@ -571,6 +584,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
             }
             #endregion
+
             #region ganado
 
             if (ganado)
@@ -689,8 +703,10 @@ namespace AlumnoEjemplos.GODMODE
                 manejarLocker(locker1);
                 manejarLocker(locker2);
                 manejarLocker(locker3);
-
+                manejarLocker(locker4);
+                manejarLocker(locker5);
                 #endregion
+
                 #region Calculos Tiempo Iluminacion
 
                 tiempoIluminacion -= elapsedTime;
@@ -717,6 +733,7 @@ namespace AlumnoEjemplos.GODMODE
                     GuiController.Instance.UserVars.setValue("poder", tiempoIluminacion);
                 }
                 #endregion
+               
                 #region Mover Enemigo
                 if (enemigoActivo)
                 {
@@ -778,6 +795,7 @@ namespace AlumnoEjemplos.GODMODE
                 }
 
                 #endregion
+               
                 #region Manejo de Objetos a Buscar
                 if (Math.Abs(Vector3.Length(camara.eye - copa.mesh.Position)) < 30f)
                 {
@@ -810,6 +828,7 @@ namespace AlumnoEjemplos.GODMODE
                 copa.flotar(random, elapsedTime, 30f, conNightVision);
                 locket.flotar(random, elapsedTime, 30f, conNightVision);
                 #endregion
+              
                 #region Renderizado
                 todosLosMeshesIluminables.Clear();
                 todosLosMeshesIluminables.AddRange(tgcScene.Meshes);
