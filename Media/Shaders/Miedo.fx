@@ -1,13 +1,3 @@
-/*
-* Shaders para efectos de Post Procesadosss
-*/
-
-
-/**************************************************************************************/
-/* DEFAULT */
-/**************************************************************************************/
-
-
 //Input del Vertex Shader
 struct VS_INPUT_DEFAULT 
 {
@@ -79,7 +69,14 @@ technique DefaultTechnique
 
 float tiempo;
 float ondas_size;
+float alarmaScaleFactor = 0.1;
 
+//Textura alarma
+texture textura_alarma;
+sampler sampler_alarma = sampler_state
+{
+	Texture = (textura_alarma);
+};
 //Pixel Shader de Ondas
 float4 ps_ondas( PS_INPUT_DEFAULT Input ) : COLOR0
 {     
@@ -88,7 +85,9 @@ float4 ps_ondas( PS_INPUT_DEFAULT Input ) : COLOR0
 Input.Texcoord.x = Input.Texcoord.x + (sin(Input.Texcoord.y + tiempo ) * ondas_size);
 	//Obtener color de textura
 	float4 color = tex2D( RenderTarget, Input.Texcoord );
-	return color;
+	//Obtener color de textura de alarma, escalado por un factor
+	float4 color2 = tex2D(sampler_alarma, Input.Texcoord) * alarmaScaleFactor;
+	return  color+color2*0.3;
 }
 
 

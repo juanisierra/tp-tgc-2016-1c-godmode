@@ -15,6 +15,7 @@ using System.Linq;
 using System.Windows.Forms;
 using TgcViewer.Utils;
 using TgcViewer.Utils.Shaders;
+using TgcViewer.Utils.Interpolation;
 
 namespace AlumnoEjemplos.GODMODE
 {
@@ -115,6 +116,8 @@ namespace AlumnoEjemplos.GODMODE
         VertexBuffer screenQuadVB;
         Texture renderTarget2D;
         Surface pOldRT;
+        TgcTexture alarmTexture;
+        InterpoladorVaiven intVaivenAlarm;
         #endregion
 
         string alumnoMediaFolder;
@@ -243,8 +246,8 @@ namespace AlumnoEjemplos.GODMODE
             recargas[2] = new Recarga(alumnoMediaFolder, new Vector3(1100f, 20f, -850f));
             recargas[3] = new Recarga(alumnoMediaFolder, new Vector3(800f, 20f, 539f));
             tiempo = 0;
-            tiempoIluminacion = 100; // 60 segundos * 3 = 3 minutos
 
+            tiempoIluminacion = 80;
             #endregion
 
             #region Carga de Mesh para Enemigo
@@ -528,12 +531,21 @@ namespace AlumnoEjemplos.GODMODE
                     , d3dDevice.PresentationParameters.BackBufferHeight, 1, Usage.RenderTarget,
                         Format.X8R8G8B8, Pool.Default);
 
-
+            
+           
             //Cargar shader con efectos de Post-Procesado
             efectoMiedo = TgcShaders.loadEffect(alumnoMediaFolder + "GODMODE\\Media\\Shaders\\Miedo.fx");
 
             //Configurar Technique dentro del shader
             efectoMiedo.Technique = "OndasTechnique";
+            //Cargar textura que se va a dibujar arriba de la escena del Render Target
+            alarmTexture = TgcTexture.createTexture(d3dDevice, alumnoMediaFolder + "GODMODE\\Media\\efecto_alarma.png");
+            intVaivenAlarm = new InterpoladorVaiven();
+            intVaivenAlarm.Min = 0;
+            intVaivenAlarm.Max = 1;
+            intVaivenAlarm.Speed = 0.8f;
+            intVaivenAlarm.reset();
+            
             #endregion
         }
 
@@ -721,11 +733,11 @@ namespace AlumnoEjemplos.GODMODE
                     {
                         if (!pila.usada)
                         {
-                            tiempoIluminacion = 100f;
+                            tiempoIluminacion = 80f;
                             sonidoPilas.play();
                         }
                         pila.usada = true;
-                        tiempoIluminacion = 100f;
+                        tiempoIluminacion = 80f;
 
                     }
                     pila.flotar(random, elapsedTime,conNightVision);
@@ -873,15 +885,15 @@ namespace AlumnoEjemplos.GODMODE
                 #endregion
 
                 #region Sprites
-                if (tiempoIluminacion <= 40)
+                if (tiempoIluminacion <= 30)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria0.png");
                 }
-                else if (tiempoIluminacion > 40 && tiempoIluminacion < 60)
+                else if (tiempoIluminacion >30 && tiempoIluminacion < 50)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria1.png");
                 }
-                else if (tiempoIluminacion >= 60 && tiempoIluminacion <= 80)
+                else if (tiempoIluminacion >= 50 && tiempoIluminacion <= 70)
                 {
                     bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria2.png");
                 }
@@ -1085,12 +1097,12 @@ namespace AlumnoEjemplos.GODMODE
                         miLuz.prenderLuz(ObjetoIluminacion, m);
                         if (ObjetoIluminacion == 0)
                         {
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 100), temblorLuz);
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 70f * (tiempoIluminacion / 80), temblorLuz);
                             // miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, mesh, 70f, temblorLuz);
                         }
                         else
                         {
-                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 100), temblorLuz);
+                            miLuz.renderizarLuz(ObjetoIluminacion, lightPos, lightDir, m, 37f * (tiempoIluminacion / 80), temblorLuz);
                         }
                         
                     }
@@ -1367,6 +1379,7 @@ namespace AlumnoEjemplos.GODMODE
         }
         void renderizarMiedo(float elapsedTime)
         {
+            
             Device device  = GuiController.Instance.D3dDevice;
             //Cargamos el Render Targer al cual se va a dibujar la escena 3D. Antes nos guardamos el surface original
             //En vez de dibujar a la pantalla, dibujamos a un buffer auxiliar, nuestro Render Target.
@@ -1448,7 +1461,8 @@ namespace AlumnoEjemplos.GODMODE
             d3dDevice.SetStreamSource(0, screenQuadVB, 0);
 
             efectoMiedo.Technique = "OndasTechnique";
-
+            efectoMiedo.SetValue("textura_alarma", alarmTexture.D3dTexture);
+            efectoMiedo.SetValue("alarmaScaleFactor", intVaivenAlarm.update());
             //Cargamos parametros en el shader de Post-Procesado
             efectoMiedo.SetValue("render_target2D", renderTarget2D);
             efectoMiedo.SetValue("tiempo", tiempo);
@@ -1486,7 +1500,7 @@ namespace AlumnoEjemplos.GODMODE
             contadorDetecciones = 0;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
-            tiempoIluminacion = 100;
+            tiempoIluminacion = 80;
             tiempo = 0;
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
