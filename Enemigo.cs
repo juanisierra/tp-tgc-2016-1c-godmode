@@ -97,13 +97,16 @@ namespace AlumnoEjemplos.GODMODE
         public void irAWaypointMasCercano()
         {
             float min = 10000f;
+            int i = 0;
             foreach (Vector3 waypoint in waypoints)
             {
                 if (Math.Abs(Vector3.Length(this.getPosicion() - waypoint)) < min)
                 {
                     min = Math.Abs(Vector3.Length(this.getPosicion() - waypoint));
                     waypointObjetivo = waypoint;
+                    indiceActual = i;
                 }
+                i++;
             }
         }
     }
