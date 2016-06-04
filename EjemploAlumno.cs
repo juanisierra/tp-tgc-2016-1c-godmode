@@ -223,7 +223,7 @@ namespace AlumnoEjemplos.GODMODE
 
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             esperandoPuerta = false;
-            //GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
+            GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
             GuiController.Instance.UserVars.addVar("enLocker");
             //Device de DirectX para crear primitivas
@@ -1010,7 +1010,7 @@ namespace AlumnoEjemplos.GODMODE
             camara.updateCamera();
             camara.LockCam = false;
             tgcScene.disposeAll();
-             esferaCamara.dispose();
+            esferaCamara.dispose();
             sonidoEnemigo.dispose(); sonidoGrito.dispose(); sonidoPilas.dispose(); sonidoObjeto.dispose(); sonidoPuertas.dispose();
             enemigo.dispose();
             meshLinterna.dispose(); meshFarol.dispose(); meshVela.dispose();
@@ -1026,6 +1026,9 @@ namespace AlumnoEjemplos.GODMODE
               objetosColisionables.Clear();
              objetosColisionablesCambiantes.Clear();
              todosObjetosColisionables.Clear();
+            GuiController.Instance.FpsCamera.Enable = false;
+            GuiController.Instance.RotCamera.Enable = false;
+            GuiController.Instance.ThirdPersonCamera.Enable = false;
         }
 
         private void manejarPuerta(Puerta puerta)
@@ -1482,6 +1485,7 @@ namespace AlumnoEjemplos.GODMODE
         }
         private void reiniciarJuego()
         {
+            
             enMenu = true;
             mostrarInstrucciones = false;
             GuiController.Instance.CustomRenderEnabled = true;
