@@ -23,7 +23,7 @@ namespace AlumnoEjemplos.GODMODE
     /// 
     public class Camara : TgcCamera
     {
-        public const float tiempoPaso = 0.4f;
+        public float tiempoPaso = 0.6f;
         SphereCollisionManager collisionManager;
         /*
          * Esta Camara es un prototipo. Esta pensada para no utilizar senos y cosenos en las rotaciones.

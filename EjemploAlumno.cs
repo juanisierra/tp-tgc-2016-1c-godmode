@@ -78,6 +78,7 @@ namespace AlumnoEjemplos.GODMODE
         Enemigo enemigo;
         bool mostrarInstrucciones;
         TgcRay rayo; //Rayo que conecta al enemigo con el jugador
+        int contadorDetecciones;
         bool perdido;
         Vector3 direccionRayo;
         Vector3 lastKnownPos;
@@ -88,8 +89,7 @@ namespace AlumnoEjemplos.GODMODE
         bool enLocker;
         List<Tgc3dSound> sonidos;
         Tgc3dSound sonidoEnemigo;
-        TgcStaticSound sonidoPilas;
-        TgcStaticSound sonidoObjeto, sonidoPuertas, sonidoGrito;
+        TgcStaticSound sonidoPilas, sonidoObjeto, sonidoPuertas, sonidoGrito, sonidoJadeo;
         Recarga[] recargas;
         Objetivo copa, espada, locket, llave;
         int iteracion;
@@ -101,7 +101,6 @@ namespace AlumnoEjemplos.GODMODE
         TgcText2d textoGameOver;
         TgcText2d textoSpace;
         TgcText2d textoGanador;
-        int contadorDetecciones;
         List<Locker> listaLockers;
         Locker locker1, locker2, locker3, locker4, locker5;
         bool enemigoEsperandoPuerta;
@@ -119,15 +118,19 @@ namespace AlumnoEjemplos.GODMODE
         TgcTexture alarmTexture;
         InterpoladorVaiven intVaivenAlarm;
         #endregion
-
+        float tiempoRestanteCorrer = TIEMPO_LIMITE_CORRER;
         string alumnoMediaFolder;
 
-        const int VELOCIDAD_ENEMIGO = 75;
-        const int VELOCIDAD_PATRULLA = 50;
+        const int VELOCIDAD_ENEMIGO = 100;
+        const int VELOCIDAD_PATRULLA = 75;
         const float POSICION_INICIAL_ENEMIGO_X = 2135.981f;
         const float POSICION_INICIAL_ENEMIGO_Z = -780.9791f;
         const float TIEMPO_DE_BUSQUEDA = 15;
         const int DELAY_FRAMES_DETECCION = 4;
+        const float VELOCIDAD_JUGADOR_CAMINAR = 100f;
+        const float VELOCIDAD_JUGADOR_CORRER = 200f;
+        const float VELOCIDAD_ROTACION_CAMARA = 2f;
+        const float TIEMPO_LIMITE_CORRER = 3f;
 
         public override void init()
         {
@@ -143,6 +146,7 @@ namespace AlumnoEjemplos.GODMODE
             mostrarInstrucciones = false;
             rayo = new TgcRay();
             GuiController.Instance.CustomRenderEnabled = true;
+            contadorDetecciones = 0;
             perdido = true;
             direccionRayo = new Vector3();
             lastKnownPos = new Vector3();
@@ -153,7 +157,6 @@ namespace AlumnoEjemplos.GODMODE
             enMenu = true;
             gameOver = false;
             ganado = false;
-            contadorDetecciones = 0;
             enemigoEsperandoPuerta = false;
             cant_pasadas = 3;
             conNightVision = false;
@@ -223,7 +226,7 @@ namespace AlumnoEjemplos.GODMODE
 
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             esperandoPuerta = false;
-            GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
+            GuiController.Instance.FullScreenEnable = false; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
             GuiController.Instance.UserVars.addVar("enLocker");
             //Device de DirectX para crear primitivas
@@ -304,8 +307,8 @@ namespace AlumnoEjemplos.GODMODE
             camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
             // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
 
-            camara.MovementSpeed = 100f;
-            camara.RotationSpeed = 2f;
+            camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
+            camara.RotationSpeed = VELOCIDAD_ROTACION_CAMARA;
             camara.JumpSpeed = 30f;
             camara.init();
             #endregion
@@ -378,6 +381,8 @@ namespace AlumnoEjemplos.GODMODE
             sonidoPuertas.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\pisada crujiente izda.wav");
             sonidoGrito = new TgcStaticSound();
             sonidoGrito.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\monstruo, grito.wav");
+            sonidoJadeo = new TgcStaticSound();
+            sonidoJadeo.loadSound(alumnoMediaFolder + "GODMODE\\Media\\Sound\\jadeo.wav");
             #endregion
 
             #region Meshes Objetos Iluminacion
@@ -797,11 +802,11 @@ namespace AlumnoEjemplos.GODMODE
                     }
 
                     //GAME OVER
-                     /*   if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f))
+                        if ((Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(enemigo.getPosicion().X, 50, enemigo.getPosicion().Z))) < 30f) && !enLocker && enemigoActivo)
                         {
                             gameOver = true;
                         }
-                        */
+                        
                     enemigo.actualizarAnim();
                     
                 }
@@ -958,36 +963,60 @@ namespace AlumnoEjemplos.GODMODE
                     conNightVision = !conNightVision;
                 }
 
-
-
-                /* //Capturar Input Mouse
-                 if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
-                 {
-                     //Boton izq apretado
-                 }*/
-
-
-                #endregion
-
-                //REGION COMENTADA
-                #region Aparecer enemigo
-                /* Aparicion aleatoria de enemigo           
-                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1288,50,372))) < 400f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
+                //Correr
+                if (GuiController.Instance.D3dInput.keyDown(Microsoft.DirectX.DirectInput.Key.LeftShift))
                 {
-                    ponerEnemigo(new Vector3(-1317f, 0f,778.95f)); 
+                    if (tiempoRestanteCorrer > 0)
+                    {
+                        camara.MovementSpeed = VELOCIDAD_JUGADOR_CORRER;
+                        camara.tiempoPaso = 0.4f;
+                        tiempoRestanteCorrer -= elapsedTime;
+                        if (tiempoRestanteCorrer <= 0)
+                        {
+                            sonidoJadeo.play();
+                            tiempoRestanteCorrer = -2 * TIEMPO_LIMITE_CORRER;
+                            camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
+                            camara.tiempoPaso = 0.6f;
+                        }
+                    }
+                    else
+                        if (tiempoRestanteCorrer < TIEMPO_LIMITE_CORRER)
+                        tiempoRestanteCorrer += elapsedTime;
                 }
-                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(10.55f, 50, -805.52f))) < 400f )
+                else
                 {
-                    ponerEnemigo(new Vector3(460.2749f, 0f, -791.8f));
+                    if (tiempoRestanteCorrer < TIEMPO_LIMITE_CORRER)
+                        tiempoRestanteCorrer += elapsedTime;
+                    camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
                 }
-                if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(1274f, 50f, -458f))) < 300f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
-                {
-                    ponerEnemigo(new Vector3(1615f, 0f, -525f));
-                }
-                */
-                #endregion
 
-            }
+
+                //Capturar Input Mouse
+                /*if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
+                {
+                    //Boton izq apretado
+                }*/
+#endregion
+
+                    //REGION COMENTADA
+                    #region Aparecer enemigo
+                    /* Aparicion aleatoria de enemigo           
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1288,50,372))) < 400f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
+                    {
+                        ponerEnemigo(new Vector3(-1317f, 0f,778.95f)); 
+                    }
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(10.55f, 50, -805.52f))) < 400f )
+                    {
+                        ponerEnemigo(new Vector3(460.2749f, 0f, -791.8f));
+                    }
+                    if (Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(1274f, 50f, -458f))) < 300f || Math.Abs(Vector3.Length(esferaCamara.Position - new Vector3(-1299, 50, 986))) < 400f)
+                    {
+                        ponerEnemigo(new Vector3(1615f, 0f, -525f));
+                    }
+                    */
+                    #endregion
+
+                }
             if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.H))
             {
                 mostrarInstrucciones = !mostrarInstrucciones;
@@ -1023,9 +1052,9 @@ namespace AlumnoEjemplos.GODMODE
             listaLockers.Clear();
             
             todosLosMeshesIluminables.Clear();
-              objetosColisionables.Clear();
-             objetosColisionablesCambiantes.Clear();
-             todosObjetosColisionables.Clear();
+            objetosColisionables.Clear();
+            objetosColisionablesCambiantes.Clear();
+            todosObjetosColisionables.Clear();
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             GuiController.Instance.ThirdPersonCamera.Enable = false;
@@ -1472,7 +1501,7 @@ namespace AlumnoEjemplos.GODMODE
             efectoMiedo.SetValue("ondas_size", 0.02f);
 
 
-            //Limiamos la pantalla y ejecutamos el render del shader
+            //Limpiamos la pantalla y ejecutamos el render del shader
             d3dDevice.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
             efectoMiedo.Begin(FX.None);
             efectoMiedo.BeginPass(0);
@@ -1497,19 +1526,17 @@ namespace AlumnoEjemplos.GODMODE
             enMenu = true;
             gameOver = false;
             ganado = false;
-            contadorDetecciones = 0;
             enemigoEsperandoPuerta = false;
             cant_pasadas = 3;
             conNightVision = false;
-            contadorDetecciones = 0;
             esperandoPuerta = false;
             ObjetoIluminacion = 0;
             tiempoIluminacion = 80;
             tiempo = 0;
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
+            contadorDetecciones = 0;
             meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
-            enemigo.indiceActual = -1;
-            enemigo.paso = 1;
+            enemigo.reiniciarWaypoints();
             enemigoActivo = true;
             enWaypoints = true;
             lastKnownPos = enemigo.getPosicion();
