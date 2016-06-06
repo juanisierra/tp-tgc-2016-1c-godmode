@@ -117,8 +117,9 @@ namespace AlumnoEjemplos.GODMODE
         Surface pOldRT;
         TgcTexture alarmTexture;
         InterpoladorVaiven intVaivenAlarm;
-        #endregion
+        bool cameraCorrection; //Propiedad que marca si necesita corregirse la camara
         float tiempoRestanteCorrer = TIEMPO_LIMITE_CORRER;
+        #endregion
         string alumnoMediaFolder;
 
         const int VELOCIDAD_ENEMIGO = 100;
@@ -134,6 +135,7 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void init()
         {
+            #region Inicializaciones
             enMenu = true;
             objetosColisionables = new List<TgcBoundingBox>(); //Lista de esferas colisionables
             objetosColisionablesCambiantes = new List<TgcBoundingBox>(); //Lista de objetos que se calcula cada vez
@@ -152,6 +154,7 @@ namespace AlumnoEjemplos.GODMODE
             lastKnownPos = new Vector3();
             enemigoActivo = true;
             enWaypoints = true;
+            tiempoRestanteCorrer = TIEMPO_LIMITE_CORRER;
             enLocker = false;
             iteracion = 0;
             enMenu = true;
@@ -160,6 +163,8 @@ namespace AlumnoEjemplos.GODMODE
             enemigoEsperandoPuerta = false;
             cant_pasadas = 3;
             conNightVision = false;
+            #endregion
+
             #region Menu
             Size screenSize = GuiController.Instance.Panel3d.Size;
             GuiController.Instance.BackgroundColor = Color.Black;
@@ -304,9 +309,12 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.FpsCamera.Enable = false;
             GuiController.Instance.RotCamera.Enable = false;
             camara = new Camara();
-            camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f));
+            //camara.setCamera(new Vector3(1f, 50f, 1f), new Vector3(1.9996f, 50f, 0.9754f)); Posicion original
             // camara.setCamera(new Vector3(1710f, 50f, -269f), new Vector3(1.9996f, 50f, 0.9754f)); //cerca del final
+            Camara.movimiento = new Vector3(0f, 0f, 0f);
+            Camara.moving = false;
 
+            camara.setCamera(new Vector3(0f, 50f, 0f), new Vector3(-1f, 49.95f, -1f));// Inicia camara en posicion de conflicto
             camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
             camara.RotationSpeed = VELOCIDAD_ROTACION_CAMARA;
             camara.JumpSpeed = 30f;
@@ -558,7 +566,11 @@ namespace AlumnoEjemplos.GODMODE
 
         public override void render(float elapsedTime)
         {
-
+            if (cameraCorrection)
+            {
+                cameraCorrection = false;
+                camara.setCamera(new Vector3(0f, 50f, 0f), new Vector3(1f, 50f, 0f));
+            }
             #region enMenu
             if (enMenu) {
 
@@ -576,6 +588,8 @@ namespace AlumnoEjemplos.GODMODE
                 if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Space))
                 {
                     enMenu = false;
+                    //Al salir del menu, marca que el proximo frame llevará corrección de la camara
+                    cameraCorrection = true;
                 }
             }
             #endregion
@@ -941,7 +955,7 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.Drawer2D.endDrawSprite();
 #endregion
 
-#region Ejemplo de input teclado
+                #region Ejemplo de input teclado
                 ///////////////INPUT//////////////////
 
 
@@ -988,6 +1002,7 @@ namespace AlumnoEjemplos.GODMODE
                     if (tiempoRestanteCorrer < TIEMPO_LIMITE_CORRER)
                         tiempoRestanteCorrer += elapsedTime;
                     camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
+                    camara.tiempoPaso = 0.6f;
                 }
 
 
@@ -996,7 +1011,7 @@ namespace AlumnoEjemplos.GODMODE
                 {
                     //Boton izq apretado
                 }*/
-#endregion
+                #endregion
 
                     //REGION COMENTADA
                     #region Aparecer enemigo
@@ -1047,7 +1062,7 @@ namespace AlumnoEjemplos.GODMODE
             for (int i = 0; i < 4; i++) recargas[i].dispose();
             foreach (Puerta puerta in puertas) puerta.mesh.dispose();
             puertas.Clear();
-             meshesExtra.Clear();
+            meshesExtra.Clear();
             foreach (Locker locker in listaLockers) locker.mesh.dispose();
             listaLockers.Clear();
             
@@ -1534,6 +1549,7 @@ namespace AlumnoEjemplos.GODMODE
             tiempoIluminacion = 80;
             tiempo = 0;
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
+            tiempoRestanteCorrer = TIEMPO_LIMITE_CORRER;
             contadorDetecciones = 0;
             meshEnemigo.Position = new Vector3(POSICION_INICIAL_ENEMIGO_X, 0, POSICION_INICIAL_ENEMIGO_Z);
             enemigo.reiniciarWaypoints();

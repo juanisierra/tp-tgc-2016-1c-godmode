@@ -114,6 +114,7 @@ namespace AlumnoEjemplos.GODMODE
         {
             indiceActual = -1;
             paso = 1;
+            waypointObjetivo = waypoints[0];
         }
     }
 }
