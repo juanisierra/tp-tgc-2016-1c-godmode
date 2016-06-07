@@ -122,14 +122,14 @@ namespace AlumnoEjemplos.GODMODE
         #endregion
         string alumnoMediaFolder;
 
-        const int VELOCIDAD_ENEMIGO = 100;
+        const int VELOCIDAD_ENEMIGO = 95;
         const int VELOCIDAD_PATRULLA = 75;
         const float POSICION_INICIAL_ENEMIGO_X = 2135.981f;
         const float POSICION_INICIAL_ENEMIGO_Z = -780.9791f;
         const float TIEMPO_DE_BUSQUEDA = 15;
         const int DELAY_FRAMES_DETECCION = 4;
         const float VELOCIDAD_JUGADOR_CAMINAR = 100f;
-        const float VELOCIDAD_JUGADOR_CORRER = 200f;
+        const float VELOCIDAD_JUGADOR_CORRER = 150f;
         const float VELOCIDAD_ROTACION_CAMARA = 2f;
         const float TIEMPO_LIMITE_CORRER = 3f;
 
@@ -983,14 +983,14 @@ namespace AlumnoEjemplos.GODMODE
                     if (tiempoRestanteCorrer > 0)
                     {
                         camara.MovementSpeed = VELOCIDAD_JUGADOR_CORRER;
-                        camara.tiempoPaso = 0.4f;
+                        camara.tiempoPaso = 0.3f;
                         tiempoRestanteCorrer -= elapsedTime;
                         if (tiempoRestanteCorrer <= 0)
                         {
                             sonidoJadeo.play();
                             tiempoRestanteCorrer = -2 * TIEMPO_LIMITE_CORRER;
                             camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
-                            camara.tiempoPaso = 0.6f;
+                            camara.tiempoPaso = 0.4f;
                         }
                     }
                     else
@@ -1002,7 +1002,7 @@ namespace AlumnoEjemplos.GODMODE
                     if (tiempoRestanteCorrer < TIEMPO_LIMITE_CORRER)
                         tiempoRestanteCorrer += elapsedTime;
                     camara.MovementSpeed = VELOCIDAD_JUGADOR_CAMINAR;
-                    camara.tiempoPaso = 0.6f;
+                    camara.tiempoPaso = 0.4f;
                 }
 
 
