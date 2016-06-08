@@ -231,7 +231,7 @@ namespace AlumnoEjemplos.GODMODE
 
             tiempoBuscando = TIEMPO_DE_BUSQUEDA;
             esperandoPuerta = false;
-            GuiController.Instance.FullScreenEnable = false; //Pantalla Completa
+            GuiController.Instance.FullScreenEnable = true; //Pantalla Completa
             //GuiController.Instance: acceso principal a todas las herramientas del Framework
             GuiController.Instance.UserVars.addVar("enLocker");
             //Device de DirectX para crear primitivas
