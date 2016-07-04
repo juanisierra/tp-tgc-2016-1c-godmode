@@ -132,6 +132,7 @@ namespace AlumnoEjemplos.GODMODE
         const float VELOCIDAD_JUGADOR_CORRER = 150f;
         const float VELOCIDAD_ROTACION_CAMARA = 2f;
         const float TIEMPO_LIMITE_CORRER = 3f;
+        private Size screenRes;
 
         public override void init()
         {
@@ -326,8 +327,9 @@ namespace AlumnoEjemplos.GODMODE
             spriteLocker = new TgcSprite();
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
+            screenRes = GuiController.Instance.FullScreenPanel.Size;
             textureSize = spriteLocker.Texture.Size;
-            spriteLocker.Scaling = new Vector2(1, 1);
+            spriteLocker.Scaling = new Vector2(0.8f,0.8f);
             spriteLocker.Position = new Vector2(-screenSize.Width / 1.9f, -screenSize.Height / 3f);
             //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
 
