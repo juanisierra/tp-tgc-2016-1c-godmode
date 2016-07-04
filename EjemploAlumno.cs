@@ -172,7 +172,7 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Text = "Presione Space para comenzar";
             textoEmpezarJuego.Color = Color.Maroon;
             textoEmpezarJuego.Align = TgcText2d.TextAlign.CENTER;
-            textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 25, FontStyle.Bold));
+            textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 22, FontStyle.Bold));
             textoEmpezarJuego.Size = new Size(500, 120);
             textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height / 0.8f, 0));
 
@@ -217,13 +217,13 @@ namespace AlumnoEjemplos.GODMODE
             titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = titulo.Texture.Size;
-            titulo.Scaling = new Vector2(0.7f, 0.7f);
-            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 3 - textureSize.Height / 2.2f, 0));
+            titulo.Scaling = new Vector2(screenSize.Height*0.7f/1080, screenSize.Height * 0.7f / 1080);
+            titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width *screenSize.Height * 0.7f / 1080 / 2, 0), FastMath.Max(screenSize.Height / 3 - textureSize.Height*screenSize.Height * 1f / 1080 / 2.2f, 0));
             instrucciones = new TgcSprite();
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
-            instrucciones.Scaling = new Vector2(1f, 1f);
+            instrucciones.Scaling = new Vector2(0.7f, 0.7f);
             instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 2, 0));
 
 
@@ -578,9 +578,8 @@ namespace AlumnoEjemplos.GODMODE
                 GuiController.Instance.Drawer2D.beginDrawSprite();
 
                 //Dibujar sprite (si hubiese mas, deberian ir todos aquí)
-                titulo.render();
+               titulo.render();
                 mancha.render();
-                
                 //Finalizar el dibujado de Sprites
                 GuiController.Instance.Drawer2D.endDrawSprite();
                 textoEmpezarJuego.render();
