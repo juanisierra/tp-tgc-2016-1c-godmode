@@ -173,7 +173,8 @@ namespace AlumnoEjemplos.GODMODE
             textoEmpezarJuego.Color = Color.Maroon;
             textoEmpezarJuego.Align = TgcText2d.TextAlign.CENTER;
             textoEmpezarJuego.changeFont(new System.Drawing.Font("TimesNewRoman", 25, FontStyle.Bold));
-            textoEmpezarJuego.Size = new Size(500, 120);
+            //textoEmpezarJuego.Size = new Size(500, 120);
+            textoEmpezarJuego.Size = new Size((int)FastMath.Ceiling(screenSize.Width * 0.52f), (int)FastMath.Ceiling(screenSize.Height * 0.24f));
             textoEmpezarJuego.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 + textoEmpezarJuego.Size.Height / 0.8f, 0));
 
             textoDescripcion = new TgcText2d();
@@ -181,49 +182,49 @@ namespace AlumnoEjemplos.GODMODE
             textoDescripcion.changeFont(new System.Drawing.Font("TimesNewRoman", 13, FontStyle.Bold));
             textoDescripcion.Color = Color.Gray;
             textoDescripcion.Align = TgcText2d.TextAlign.LEFT;
-            textoDescripcion.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
+            textoDescripcion.Size = new Size(screenSize.Width - (int)FastMath.Ceiling(screenSize.Width * 0.21f), screenSize.Height / 2);
             textoDescripcion.Position = new Point(screenSize.Width / 8, screenSize.Height / 2);
 
             textoGameOver = new TgcText2d();
             textoGameOver.Text = "GAME OVER";
             textoGameOver.Color = Color.Red;
             textoGameOver.Align = TgcText2d.TextAlign.CENTER;
-            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman", 60, FontStyle.Bold));
-            textoGameOver.Size = new Size(500, 200);
+            textoGameOver.changeFont(new System.Drawing.Font("TimesNewRoman", screenSize.Width*screenSize.Height* 0.000122f, FontStyle.Bold));
+            textoGameOver.Size = new Size((int)FastMath.Ceiling(screenSize.Width * 0.52f), (int)FastMath.Ceiling(screenSize.Height * 0.39f));
             textoGameOver.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), (int)FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 6f, 0));
 
             textoGanador = new TgcText2d();
             textoGanador.Text = "Felicitaciones, Ganaste";
             textoGanador.Color = Color.Green;
             textoGanador.Align = TgcText2d.TextAlign.CENTER;
-            textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", 50, FontStyle.Bold));
-            textoGanador.Size = new Size(500, 200);
+            textoGanador.changeFont(new System.Drawing.Font("TimesNewRoman", screenSize.Width * screenSize.Height * 0.000102f, FontStyle.Bold));
+            textoGanador.Size = new Size((int)FastMath.Ceiling(screenSize.Width * 0.52f), (int)FastMath.Ceiling(screenSize.Height * 0.39f));
             textoGanador.Position = new Point(FastMath.Max(screenSize.Width / 2 - textoEmpezarJuego.Size.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textoEmpezarJuego.Size.Height / 2, 0));
 
             textoSpace = new TgcText2d();
             textoSpace.Text = "Presione Space para Volver al menu";
             textoSpace.Color = Color.White;
             textoSpace.Align = TgcText2d.TextAlign.LEFT;
-            textoSpace.Size = new Size(screenSize.Width - 200, screenSize.Height / 2);
+            textoSpace.Size = new Size(screenSize.Width - (int)FastMath.Ceiling(screenSize.Width * 0.21f), screenSize.Height / 2);
             textoSpace.Position = new Point(screenSize.Width / 8, screenSize.Height / 2 + textoGameOver.Size.Height);
 
             mancha = new TgcSprite();
             mancha.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\mancha1.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             Size textureSize = mancha.Texture.Size;
-            mancha.Scaling = new Vector2(0.6f, 0.6f);
+            mancha.Scaling = new Vector2(screenSize.Width* 0.00062f, screenSize.Height * 0.0012f);
             mancha.Position = new Vector2(FastMath.Max(screenSize.Width / 4 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 4f, 0));
             titulo = new TgcSprite();
             titulo.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\titulo.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = titulo.Texture.Size;
-            titulo.Scaling = new Vector2(0.7f, 0.7f);
+            titulo.Scaling = new Vector2(screenSize.Width * 0.00073f, screenSize.Height * 0.0014f);
             titulo.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width * 0.7f / 2, 0), FastMath.Max(screenSize.Height / 3 - textureSize.Height / 2.2f, 0));
             instrucciones = new TgcSprite();
             instrucciones.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\instrucciones.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
-            instrucciones.Scaling = new Vector2(1f, 1f);
+            instrucciones.Scaling = new Vector2(screenSize.Width * 0.001f, screenSize.Height * 0.002f);
             instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 2, 0));
 
 
@@ -288,7 +289,8 @@ namespace AlumnoEjemplos.GODMODE
             GuiController.Instance.UserVars.addVar("lastKnown", 0);
             GuiController.Instance.UserVars.addVar("enWaypoints", 0);
             GuiController.Instance.UserVars.addVar("perdido", perdido);
-
+            GuiController.Instance.UserVars.addVar("ancho_pantalla", screenSize.Width);
+            GuiController.Instance.UserVars.addVar("alto_pantalla", screenSize.Height);
             GuiController.Instance.UserVars.addVar("poder", 0);
             GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 10000, 4000);
             GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0, 500, 200);
@@ -327,7 +329,7 @@ namespace AlumnoEjemplos.GODMODE
             spriteLocker.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\spriteLocker.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = spriteLocker.Texture.Size;
-            spriteLocker.Scaling = new Vector2(1, 1);
+            spriteLocker.Scaling = new Vector2(screenSize.Width*0.001f, screenSize.Height*0.002f);
             spriteLocker.Position = new Vector2(-screenSize.Width / 1.9f, -screenSize.Height / 3f);
             //spriteLocker.Position = new Vector2(FastMath.Max(screenSize.Width / 2 -textureSize.Width/5, 0), FastMath.Max(screenSize.Height /2 - textureSize.Width/4 , 0));
 
@@ -419,9 +421,9 @@ namespace AlumnoEjemplos.GODMODE
             #region Sprite Bateria
             bateria = new TgcSprite();
             bateria.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Bateria3.png");
-             screenSize = GuiController.Instance.Panel3d.Size;
+            screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = bateria.Texture.Size;
-            bateria.Scaling = new Vector2(0.4f, 0.4f);
+            bateria.Scaling = new Vector2(screenSize.Height * 0.00078f, screenSize.Height * 0.00078f);
             bateria.Position = new Vector2(FastMath.Max(screenSize.Width / 5 - textureSize.Width / 4, 0), FastMath.Max(screenSize.Height - textureSize.Height / 1.7f, 0));
             #endregion
             
@@ -430,8 +432,9 @@ namespace AlumnoEjemplos.GODMODE
             spriteObjetivos.Texture = TgcTexture.createTexture(GuiController.Instance.AlumnoEjemplosDir + "GODMODE\\Media\\Objetivos\\0.png");
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = spriteObjetivos.Texture.Size;
-            spriteObjetivos.Scaling = new Vector2(0.6f, 0.6f);
+            spriteObjetivos.Scaling = new Vector2(screenSize.Height*0.0012f, screenSize.Height * 0.0012f); 
             spriteObjetivos.Position = new Vector2(FastMath.Max(screenSize.Width / 2.7f, 0), FastMath.Max(screenSize.Height / 1.2f, 0));
+
             #endregion
 
             #region Puertas
