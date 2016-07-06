@@ -225,7 +225,7 @@ namespace AlumnoEjemplos.GODMODE
             screenSize = GuiController.Instance.Panel3d.Size;
             textureSize = instrucciones.Texture.Size;
             instrucciones.Scaling = new Vector2(screenSize.Width * 0.001f, screenSize.Height * 0.002f);
-            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - textureSize.Width / 2, 0), FastMath.Max(screenSize.Height / 2 - textureSize.Height / 2, 0));
+            instrucciones.Position = new Vector2(FastMath.Max(screenSize.Width / 2 - (screenSize.Width * 0.001f*textureSize.Width) / 2, 0), FastMath.Max(screenSize.Height / 2 - (screenSize.Height * 0.002f*textureSize.Height) / 2, 0));
 
 
             #endregion
