@@ -22,5 +22,5 @@ alt="Trailer" width="240" height="180" border="10" /></a>
 ##Instalacion  
 El tp es un plug-in para el framework grafico [TGC-Viewer](https://github.com/tgc-utn/tgc-viewer)  
 1. Descargar el TGC-Viewer version 1.0.1 de https://github.com/tgc-utn/tgc-viewer/tree/v1.0.1  
-2. Clonar el repositorio adentro de la carpeta AlumnoEjemplos y renombrarla como GODMODE
+2. Clonar el repositorio adentro de la carpeta AlumnoEjemplos y renombrarla como GODMODE  
 3. En caso de no existir, agregar la referencia a Direct3DX en los 3 proyectos del Visual Studio
